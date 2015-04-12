@@ -8,6 +8,7 @@
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [ring-server "0.4.0"]
+                 [ring-middleware-format "0.5.0"]
                  [cljsjs/react "0.13.1-0"]
                  [reagent "0.5.0"]
                  [reagent-forms "0.4.9"]
@@ -17,8 +18,12 @@
                  [ring/ring-defaults "0.1.4"]
                  [prone "0.8.1"]
                  [compojure "1.3.3"]
+                 [ring/ring-json "0.3.1"]
                  [selmer "0.8.2"]
                  [environ "1.0.0"]
+                 [cheshire "5.3.1"]
+                 [com.novemberain/monger "2.0.1"]
+                 [cljs-http "0.1.27"]
                  [secretary "1.2.3"]]
 
   :plugins [[lein-cljsbuild "1.0.4"]
@@ -48,7 +53,7 @@
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
-  :profiles {:dev {:repl-options {:init-ns proto.repl
+  :profiles {:dev-common {:repl-options {:init-ns proto.repl
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
                                                      cljx.repl-middleware/wrap-cljx]}
 
@@ -87,9 +92,10 @@
 
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:main "proto.dev"
-                                                         :source-map true}}
-}
-}}
+                                                         :source-map true
+                                                         :externs ["libs/JOB.js" "libs/DecoderWorker.js" "libs/exif.js"]}}}}}
+             :dev-env-vars {}
+             :dev [:dev-common :dev-env-vars]
 
              :uberjar {:hooks [cljx.hooks leiningen.cljsbuild minify-assets.plugin/hooks]
                        :env {:production true}

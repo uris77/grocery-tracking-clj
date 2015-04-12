@@ -4,7 +4,9 @@
               [secretary.core :as secretary :include-macros true]
               [goog.events :as events]
               [goog.history.EventType :as EventType]
-              [cljsjs.react :as react])
+              [cljsjs.react :as react]
+              [proto.goods :as goods]
+              [proto.barcode-camera :as camera])
     (:import goog.History))
 
 ;; -------------------------
@@ -26,7 +28,7 @@
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
-  (session/put! :current-page #'home-page))
+  (session/put! :current-page #'goods/create-good-form))
 
 (secretary/defroute "/about" []
   (session/put! :current-page #'about-page))
@@ -48,5 +50,8 @@
   (reagent/render [current-page] (.getElementById js/document "app")))
 
 (defn init! []
+  ;;(enable-console-print!)
+  ;;(goods/fetch-goods)
+  (camera/start)
   (hook-browser-navigation!)
   (mount-root))

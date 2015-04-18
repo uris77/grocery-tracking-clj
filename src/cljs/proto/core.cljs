@@ -6,7 +6,7 @@
               [goog.history.EventType :as EventType]
               [cljsjs.react :as react]
               [proto.goods :as goods]
-              [proto.barcode-camera :as camera])
+              [proto.barcode-picture :as picture])
     (:import goog.History))
 
 ;; -------------------------
@@ -52,6 +52,7 @@
 (defn init! []
   ;;(enable-console-print!)
   ;;(goods/fetch-goods)
-  (camera/start)
+  ;;(camera/start)
+  (picture/start)
   (hook-browser-navigation!)
   (mount-root))

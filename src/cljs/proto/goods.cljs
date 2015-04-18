@@ -26,6 +26,7 @@
    [:div {:class "col-xs-4"}
     [:input {:class "form-control"
              :id id
+             :value (id (state/get-new-good))
              :on-change #(state/set-new-good-value! id (-> % .-target .-value))}]]])
 
 (defn create-good-form

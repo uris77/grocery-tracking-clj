@@ -5,10 +5,11 @@
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 
-(defn fetch-goods []
+(defn fetch-goods [page]
   (go
-    (let [resp (<! (http/get "/api/goods" {"accept" "application/json"}))]
-      (prn "Got back resp: " (:body resp)))))
+    (let [resp (<! (http/get (str "/api/goods/" page) {"accept" "application/json"}))]
+      (prn "Got back resp: " (:body resp))
+      (swap! state/app-state assoc-in [:goods] (:body resp)))))
 
 (defn- submit-form [e]
   (prn (state/get-new-good))
@@ -41,4 +42,23 @@
        [:div {:class "col-xs-offset-2 col-xs-10"}
         [:button {:class "btn btn-primary btn-lg col-xs-2"
                   :on-click submit-form} "Save"]]]]]))
+
+(defn- good-row [good]
+  [:tr
+   [:td (:barcode good)]
+   [:td (:name good)]
+   [:td (:description good)]
+   [:td (:categories good)]] )
+
+(defn goods-list []
+  [:table {:class "table table-striped table-bordered"}
+   [:thead
+    [:tr
+     [:th "Barcode"]
+     [:th "Name"]
+     [:th "Description"]
+     [:th "Categoriees"]]] 
+   [:tbody
+    (for [good (state/get-goods)]
+      (good-row good))]])
 

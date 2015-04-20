@@ -10,8 +10,8 @@
             [cheshire.core :refer :all]
             [environ.core :refer [env]]))
 
-(defn list-goods []
-  (let [fetched-goods (goods/all)]
+(defn list-goods [page]
+  (let [fetched-goods (goods/all (read-string page))]
     {:headers {"Content-Type" "application/json"}
      :body fetched-goods}))
 
@@ -22,7 +22,7 @@
      :body created-good}))
 
 (defroutes api-routes
-  (GET "/api/goods" [] (list-goods))
+  (GET "/api/goods/:page" [page] (list-goods page))
   (POST "/api/goods" req (wrap-json-body create-good {:keywords? true :bigdecimals? true})))
 
 (defroutes app-routes

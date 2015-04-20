@@ -11,7 +11,6 @@
       (prn "Got back resp: " (:body resp)))))
 
 (defn- submit-form [e]
-  (prn "Submit...")
   (prn (state/get-new-good))
   (go
     (let [resp (<! (http/post "/api/goods" {:json-params (state/get-new-good)}))]

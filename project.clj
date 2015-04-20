@@ -22,6 +22,7 @@
                  [selmer "0.8.2"]
                  [environ "1.0.0"]
                  [cheshire "5.3.1"]
+                 [prismatic/schema "0.4.0"]
                  [com.novemberain/monger "2.0.1"]
                  [cljs-http "0.1.27"]
                  [secretary "1.2.3"]]

@@ -11,12 +11,16 @@
 
 (def ctx (.getContext canvas "2d"))
 
+(defn- write-barcode!
+  [barcode]
+  (state/set-barcode! barcode))
+
 (defn- image-callback [result]
   (if (> (count result) 0)
+    (write-barcode! (.-Value (nth result 0)))
     (do
-      (state/set-barcode! (.-Value (nth result 0)))
-      (prn "Decoded Value: " (state/get-barcode)))
-    (prn "Decoding failed.")))
+      (write-barcode! "")
+      (prn "Decoding failed."))))
 
 (defn- localization-callback [result]
   (.beginPath ctx)
@@ -58,6 +62,7 @@
   (.SetLocalizationCallback js/JOB localization-callback)
   (when (and take-picture show-picture)
     (set! (.-onchange take-picture) (fn [event]
+                                      (write-barcode! "Decoding....")
                                       (let [files (array-seq (.-files (.-target event)))]
                                         (when (and files (> (count (seq files)) 0))
                                           (let [file (first files)]

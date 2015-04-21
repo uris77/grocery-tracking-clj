@@ -6,6 +6,8 @@
 (def app-state (atom {:new-good {}
                       :goods []}))
 
+(def base-url "#")
+
 (defn get-goods []
   (get-in @app-state [:goods]))
 

@@ -29,12 +29,17 @@
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/goods/create" []
+  (picture/start)
   (session/put! :current-page #'goods/create-good-form))
 
 (secretary/defroute "/about" []
   (session/put! :current-page #'about-page))
 
 (secretary/defroute "/" []
+  (goods/fetch-goods 0)
+  (session/put! :current-page #'goods/goods-list))
+
+(secretary/defroute "/goods" []
   (goods/fetch-goods 0)
   (session/put! :current-page #'goods/goods-list))
 

@@ -61,7 +61,5 @@
 
 (defn init! []
   ;;(enable-console-print!)
-
-  ;;(picture/start)
   (hook-browser-navigation!)
   (mount-root))

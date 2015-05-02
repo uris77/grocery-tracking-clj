@@ -10,6 +10,11 @@
    (schema/optional-key :categories)  schema/Str
    })
 
+(#+clj schema/def #+cljs def Shop
+       {:name schema/Str
+        :latitude #+clj Long #+cljs schema/Int
+        :longitude #+clj Long #+cljs schema/Int})
+
 (defn- item-error-parser 
   "Makes an error message more readable."
   [error-msg]
@@ -43,6 +48,13 @@
   "Validates a grocery item."
   [item-map]
   (let [err (schema/check GroceryItem item-map)]
+    (filter-errors (gather-entity-errors (seq err)))
+    (reduce into {} (pp-errors (filter-errors (gather-entity-errors (seq err)))))))
+
+(defn validate-shop
+  "Validates a shop"
+  [shop-map]
+  (let [err (schema/check Shop shop-map)]
     (filter-errors (gather-entity-errors (seq err)))
     (reduce into {} (pp-errors (filter-errors (gather-entity-errors (seq err)))))))
 

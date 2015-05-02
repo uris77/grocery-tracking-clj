@@ -2,9 +2,9 @@
   (:require [reagent.core :as reagent]
             [cljs-http.client :as http]
             [proto.state :as state]
-            [secretary.core :as secretary :include-macros true])
+            [secretary.core :as secretary :include-macros true]
+            [proto.util :refer [validate-item]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
-
 
 (defn fetch-goods [page]
   (go
@@ -14,9 +14,12 @@
 
 (defn- submit-form [e]
   (prn (state/get-new-good))
-  (go
-    (let [resp (<! (http/post "/api/goods" {:json-params (state/get-new-good)}))]
-      (prn "Got response " (:body resp))))
+  (let [errors (validate-item (state/get-new-good))]
+    (if (empty? errors)
+      (go
+        (let [resp (<! (http/post "/api/goods" {:json-params (state/get-new-good)}))]
+          (prn "Got response " (:body resp))))
+      (prn "Validation failed " errors)))
   (.preventDefault e))
 
 (defn new-good-text-input

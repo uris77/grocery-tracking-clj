@@ -23,7 +23,7 @@
                  [environ "1.0.0"]
                  [cheshire "5.3.1"]
                  [prismatic/schema "0.4.0"]
-                 [com.novemberain/monger "2.0.1"]
+                 [com.novemberain/monger "2.1.0"]
                  [cljs-http "0.1.27"]
                  [secretary "1.2.3"]]
 
@@ -97,7 +97,8 @@
                                                          :externs ["libs/JOB.js" "libs/DecoderWorker.js" "libs/exif.js"]}}}}}
              :dev-env-vars {}
              :dev [:dev-common :dev-env-vars]
-
+             :test-env-vars {}
+             :test [:test-env-vars]
              :uberjar {:hooks [cljx.hooks leiningen.cljsbuild minify-assets.plugin/hooks]
                        :env {:production true}
                        :aot :all

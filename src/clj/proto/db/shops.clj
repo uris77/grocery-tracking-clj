@@ -4,7 +4,8 @@
   (:require [proto.db.core :refer [db conn]]
             [proto.util :refer [validate-shop]]
             [monger.query :as query :refer [with-collection read-preference paginate fields limit skip snapshot]]
-            [monger.collection :as coll]))
+            [monger.collection :as coll]
+            [monger.search :as text-search]))
 
 (def shops-coll "shops")
 
@@ -33,3 +34,16 @@
   [id]
   (let [oid (ObjectId. id)]
     (coll/remove-by-id db shops-coll oid)))
+
+(defn find-by-name
+  "Finds a shop by its name"
+  [name]
+  (coll/find-one-as-map db shops-coll {:name name}))
+
+(defn seach-by-name
+  "Only available in mongo 3.0"
+  [name]
+  (let [search-results (text-search/search db shops-coll "Shop")]
+    (text-search/results-from search-results)
+    search-results))
+

@@ -98,7 +98,8 @@
              :dev-env-vars {}
              :dev [:dev-common :dev-env-vars]
              :test-env-vars {}
-             :test [:test-env-vars]
+             :test-common {:env {:test? true}}
+             :test [:test-common :test-env-vars]
              :uberjar {:hooks [cljx.hooks leiningen.cljsbuild minify-assets.plugin/hooks]
                        :env {:production true}
                        :aot :all

@@ -23,5 +23,5 @@
 
 (defn add-full-text!
   []
-  (coll/ensure-index db "shops" {:name "text" :content "text"}))
+  (coll/ensure-index db "shops" {:name "text"}))
 

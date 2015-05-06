@@ -20,7 +20,7 @@
   [page]
   (with-collection db shops-coll
     (query/find {})
-    (fields [:id :name :longitude :latitude])
+    (fields [:id :name :longitude :latitude :categories])
     (query/sort (sorted-map :name 1))
     (skip (* page 10))
     (limit 10)))

@@ -2,9 +2,26 @@
   (:require [reagent.core :as reagent]
             [cljs-http.client :as http]
             [proto.state :as state]
+            [proto.barcode-picture :as picture]
             [secretary.core :as secretary :include-macros true]
             [proto.util :refer [validate-item]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
+
+(defn show-list
+  []
+  (set! (.-location js/window) (str state/base-url "/goods")))
+
+(defn return-to-list
+  []
+  (state/clear-barcode!)
+  (state/reset-errors!)
+  (state/reset-new-good!)
+  (show-list))
+
+(defn cancel-form
+  [e]
+  (.preventDefault e)
+  (return-to-list))
 
 (defn fetch-goods [page]
   (go
@@ -18,8 +35,11 @@
     (if (empty? errors)
       (go
         (let [resp (<! (http/post "/api/goods" {:json-params (state/get-new-good)}))]
-          (prn "Got response " (:body resp))))
-      (prn "Validation failed " errors)))
+          (prn "Got response " (:body resp))
+          (return-to-list)))
+      (do
+        (state/set-errors! (vec (vals errors)))
+        (prn "Validation failed " (state/get-errors)))))
   (.preventDefault e))
 
 (defn new-good-text-input
@@ -33,18 +53,34 @@
              :value (id (state/get-new-good))
              :on-change #(state/set-new-good-value! id (-> % .-target .-value))}]]])
 
-(defn show-list
-  [e]
-  (.preventDefault e)
-  (secretary/dispatch! "/goods")
-  (set! (.-location js/window) (str state/base-url "/goods")))
+
+(defn show-errors
+  [errors]
+  (when (> (count errors) 0)
+    [:div
+     [:h3 [:span {:class "label label-danger"} "Errors while saving new item."]  ]
+     [:ul {:class "list-group"}
+      (for [error errors]
+       [:li {:class "list-group-item list-group-item-danger"} error] )
+      ]]))
 
 (defn create-good-form
   []
-  (let [new-good (state/get-new-good)
-        barcode (:barcode new-good)]
+ (let [new-good (state/get-new-good)
+       barcode (:barcode new-good)
+       errors (state/get-errors)]
     [:div
+
      [:form {:class "form-horizontal"}
+      [:div {:class "form-group"}
+       [:canvas {:id "picture-region" :width 640 :height 480 :hidden true}]
+       [:img {:id "img" :hidden true}]
+       [:input {:id "take-picture" 
+                :type "file" 
+                :accept "image/*;capture-camera"
+                :on-change picture/picture-cb}]]
+      [:div {:class "form-group" :style {:padding-left "15em" :width "50%"}}
+       (show-errors errors)]
       [:div {:class "form-group"}
        [:label {:class "col-xs-2 control-label"} "Barcode"]
        [:label {:class "control-label"} barcode]]
@@ -55,10 +91,10 @@
        [:div {:class "col-xs-offset-2 col-xs-10"}
         [:button {:class "btn btn-default btn-lg col-xs-2"
                   :style {:margin-right "0.5em"}
-                  :on-click show-list}
+                  :on-click cancel-form}
          "Cancel"]
         [:button {:class "btn btn-primary btn-lg col-xs-2"
-                  :on-click submit-form} "Save"]]]]]))
+                  :on-click submit-form} "Save"]]]]]) )
 
 (defn- good-row [good]
   [:tr
@@ -69,7 +105,6 @@
 
 (defn show-create-form
   []
-  (secretary/dispatch! "/goods/create")
   (set! (.-location js/window) (str state/base-url "/goods/create")))
 
 (defn goods-list []

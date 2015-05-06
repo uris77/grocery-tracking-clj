@@ -1,14 +1,15 @@
 (ns proto.core
-    (:require [reagent.core :as reagent :refer [atom]]
-              [reagent.session :as session]
-              [secretary.core :as secretary :include-macros true]
-              [goog.events :as events]
-              [goog.history.EventType :as EventType]
-              [cljsjs.react :as react]
-              [proto.goods :as goods]
-              [proto.barcode-picture :as picture]
-              [proto.util :refer [validate-item]])
-    (:import goog.History))
+  (:require [reagent.core :as reagent :refer [atom]]
+            [reagent.session :as session]
+            [secretary.core :as secretary :include-macros true]
+            [goog.events :as events]
+            [goog.history.EventType :as EventType]
+            [cljsjs.react :as react]
+            [proto.goods :as goods]
+            [proto.shops :as shops]
+            [proto.barcode-picture :as picture]
+            [proto.util :refer [validate-item]])
+  (:import goog.History))
 
 ;; -------------------------
 ;; Views
@@ -29,8 +30,9 @@
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/goods/create" []
-  (picture/start)
-  (session/put! :current-page #'goods/create-good-form))
+  ;;(picture/start)  
+  (session/put! :current-page #'goods/create-good-form)
+  )
 
 (secretary/defroute "/about" []
   (session/put! :current-page #'about-page))
@@ -42,6 +44,13 @@
 (secretary/defroute "/goods" []
   (goods/fetch-goods 0)
   (session/put! :current-page #'goods/goods-list))
+
+(secretary/defroute "/shops" []
+  (shops/fetch-shops 0)
+  (session/put! :current-page #'shops/shops-list)
+  
+  (secretary/defroute "/shops/create" []
+    (session/put! :current-page #'shops/create-shop-form)))
 
 ;; -------------------------
 ;; History
@@ -60,6 +69,5 @@
   (reagent/render [current-page] (.getElementById js/document "app")))
 
 (defn init! []
-  ;;(enable-console-print!)
   (hook-browser-navigation!)
   (mount-root))

@@ -7,6 +7,7 @@
             [selmer.parser :refer [render-file]]
             [prone.middleware :refer [wrap-exceptions]]
             [proto.db.goods :as goods]
+            [proto.db.shops :as shops]
             [cheshire.core :refer :all]
             [environ.core :refer [env]]))
 
@@ -21,9 +22,22 @@
     {:headers {"Content-Type" "application/json"}
      :body created-good}))
 
+(defn list-shops [page]
+  (let [fetched-shops (shops/all (read-string page))]
+    {:headers {"Content-Type" "application/json"}
+     :body fetched-shops}))
+
+(defn create-shop [req]
+  (let [shop (:body req)
+        created-shop (shops/create! shop)]
+    {:headers {"Content-Type" "application/json"}
+     :body created-shop}))
+
 (defroutes api-routes
   (GET "/api/goods/:page" [page] (list-goods page))
-  (POST "/api/goods" req (wrap-json-body create-good {:keywords? true :bigdecimals? true})))
+  (POST "/api/goods" req (wrap-json-body create-good {:keywords? true :bigdecimals? true}))
+  (GET "/api/shops/:page" [page] (list-shops page))
+  (POST "/api/shops" req (wrap-json-body create-shop {:keywords? true :bigdecimals? true})))
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/main.html" {:dev (env :dev?)}))

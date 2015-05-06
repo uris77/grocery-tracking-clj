@@ -3,13 +3,15 @@
             [proto.state :as state]))
 
 
-(def take-picture (.querySelector js/document "#take-picture"))
+(def take-picture-el  (.querySelector js/document "#take-picture"))
 
-(def show-picture (.createElement js/document "img"))
+(defn- show-picture [] (.getElementById js/document "img"))
 
-(def canvas (.getElementById js/document "picture-region"))
+(def picture-element (show-picture))
 
-(def ctx (.getContext canvas "2d"))
+(defn- canvas-el [] (.getElementById js/document "picture-region"))
+
+(defn- canvas-ctx [] (.getContext (canvas-el) "2d"))
 
 (defn- write-barcode!
   [barcode]
@@ -18,16 +20,15 @@
 (defn- image-callback [result]
   (if (> (count result) 0)
     (write-barcode! (.-Value (nth result 0)))
-    (do
-      (write-barcode! "")
-      (prn "Decoding failed."))))
+    (write-barcode! "Error trying to read barcode!")))
 
 (defn- localization-callback [result]
-  (.beginPath ctx)
-  (set! (.-lineWidth ctx) "2")
-  (set! (.-strokeStyle ctx) "red")
-  (map (fn [it] (.rect ctx (.-x it) (.-y it) (.-width it) (.-height it))) result)
-  (.stroke ctx))
+  (let [ctx (canvas-ctx)]
+    (.beginPath ctx)
+    (set! (.-lineWidth ctx) "2")
+    (set! (.-strokeStyle ctx) "red")
+    (map (fn [it] (.rect ctx (.-x it) (.-y it) (.-width it) (.-height it))) result)
+    (.stroke ctx)))
 
 (defn- get-image-data [results image-data]
   (set! (.-data image-data) (map (fn [data result] 
@@ -36,47 +37,55 @@
   image-data)
 
 (defn- orientation-callback [result]
-  (set! (.-width canvas) (.-width result))
-  (set! (.-height canvas) (.-height result))
-  (let [image (get-image-data result (.getImageData ctx 0 0 (.-width canvas) (.-height canvas)))]
-    (.putImageData ctx image 0 0)))
+  (let [canvas (canvas-el)
+        ctx (canvas-ctx)]
+    (set! (.-width canvas) (.-width result))
+    (set! (.-height canvas) (.-height result))
+    (let [image (get-image-data result (.getImageData ctx 0 0 (.-width canvas) (.-height canvas)))]
+      (.putImageData ctx image 0 0))))
 
 (defn- file-reader-onload [event]
-  (set! (.-onload show-picture) (fn [event] 
-                                  (state/clear-barcode!)
-                                  (.DecodeImage js/JOB show-picture))))
+  (set! (.-onload (show-picture)) (fn [event] 
+                                    (state/clear-barcode!)
+                                    (.DecodeImage js/JOB (show-picture)))))
 
 (defn- decode-image! []
-  (state/clear-barcode!)
-  (.DecodeImage js/JOB show-picture))
+  (let [picture-el (show-picture)]
+    (state/clear-barcode!)
+    (.DecodeImage js/JOB picture-el)))
 
 (defn- show-picture-onload [event]
   (decode-image!))
 
-(defn start []
+(defn read-image-from-file
+  [file event]
+  (let [picture-element (show-picture)]
+    (try
+      (set! (.-onload picture-element) show-picture-onload)
+      (set! (.-src picture-element) ((aget js/window "URL" "createObjectURL") file))
+      (catch js/Error e
+        (.log js/console "Error trying to read file " e)
+        (try
+          (let [file-reader FileReader.]
+            (set! (.-onload file-reader) (fn [] 
+                                           (set! (.-onload picture-element) decode-image!)
+                                           (set! (.-src picture-element) (aget event "target" "result"))))
+            (.readAsDataURL file-reader file))
+          (catch js/Error err
+            (state/clear-barcode!)) )))))
+
+(defn init []
   (.Init js/JOB)
   (.SetImageCallback js/JOB image-callback)
   (set! (.-PostOrientation js/JOB) true)
   (set! (.-OrientationCallback js/JOB) orientation-callback)
   (.SwitchLocalizationFeedback js/JOB true)
-  (.SetLocalizationCallback js/JOB localization-callback)
-  (when (and take-picture show-picture)
-    (set! (.-onchange take-picture) (fn [event]
-                                      (write-barcode! "Decoding....")
-                                      (let [files (array-seq (.-files (.-target event)))]
-                                        (when (and files (> (count (seq files)) 0))
-                                          (let [file (first files)]
-                                            (try
-                                              (set! (.-onload show-picture) show-picture-onload)
-                                              (set! (.-src show-picture) ((aget js/window "URL" "createObjectURL") file))
-                                              (catch js/Error e
-                                                (try
-                                                  (let [file-reader FileReader.]
-                                                    (set! (.-onload file-reader) (fn [] 
-                                                                                   (set! (.-onload show-picture) decode-image!)
-                                                                                   (set! (.-src show-picture) (aget event "target" "result"))))
-                                                    
-                                                    (.readAsDataURL file-reader file))
-                                                  (catch js/Error err
-                                                    (state/clear-barcode!)) ))))))))))
+  (.SetLocalizationCallback js/JOB localization-callback))
+
+(defn picture-cb [event]
+  (write-barcode! "Decoding....")  
+  (init)
+  (let [files (array-seq (.-files (.-target event)))]
+    (when (and files (> (count (seq files)) 0))
+      (read-image-from-file (first files) event))))
 

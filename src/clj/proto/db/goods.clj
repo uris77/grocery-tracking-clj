@@ -24,7 +24,7 @@
   [page]
   (with-collection db goods-coll
     (query/find {})
-    (fields [:id :barcode :name :description :cateegories])
+    (fields [:id :barcode :name :description :categories])
     (query/sort (sorted-map :name 1))
     (skip (* page 10))
     (limit 10)))

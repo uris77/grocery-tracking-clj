@@ -6,6 +6,21 @@
             [proto.util :refer [validate-shop]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
+(defn show-list
+  []
+  (set! (.-location js/window) (str state/base-url "/shops")))
+
+(defn return-to-list
+  []
+  (state/reset-errors!)
+  (state/reset-new-shop!)
+  (show-list))
+
+(defn cancel-form
+  [e]
+  (.preventDefault e)
+  (return-to-list))
+
 (defn fetch-shops
   [page-num]
   (go
@@ -31,21 +46,29 @@
     (if (empty? errors)
       (go
         (let [resp (<! (http/post "/api/shops" {:json-params (state/get-new-shop)}))]
-          (prn "Got new shop " (:body resp))))
-      (prn "Validation failed " errors))))
+          (prn "Got new shop " (:body resp))
+          (return-to-list)))
+      (state/set-errors! (vec (vals errors))))))
 
 
-(defn show-list
-  [e]
-  (.preventDefault e)
-  (secretary/dispatch! "shops")
-  (set! (.-location js/window) (str state/base-url "/shops")))
+(defn show-errors
+  [errors]
+  (when (> (count errors) 0)
+    [:div {:class "form-group" :style {:padding-left "15em" :width "50%"}}
+     [:h3 [:span {:class "label label-danger"} "Errors while saving new shop."]]
+     [:ul {:class "list-group"}
+      (for [error errors]
+        [:li {:class "list-group-item list-group-item-danger"} error])]]))
 
 (defn create-shop-form
   []
-  (let [new-shop (state/get-new-shop)]
+  (let [new-shop (state/get-new-shop)
+        errors (state/get-errors)]
     [:div
      [:form {:class "form-horizontal"}
+      (show-errors errors)
+      [:div {:class "form-group"}
+       [:h2 {:style {:padding-left "6em"}} "Create New Shop"]]
       [:div {:class "form-group"}
        (input-text :name "Name")
        (input-text :latitude "Latitude")
@@ -54,7 +77,7 @@
         [:div {:class "col-xs-offset-2 col-xs-10"}
          [:button {:class "btn btn-default btn-lg col-xs-2"
                    :style {:margin-right "0.5em"}
-                   :on-click show-list}
+                   :on-click cancel-form}
           "Cancel"]
          [:button {:class "btn btn-primary btn-lg col-xs-2"
                    :on-click submit-form}
@@ -63,7 +86,6 @@
 
 (defn- show-create-form
   []
-  (secretary/dispatch! "/shops/create")
   (set! (.-location js/window) (str state/base-url "/shops/create")))
 
 (defn- shops-row

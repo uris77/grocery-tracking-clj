@@ -58,11 +58,10 @@
   [errors]
   (when (> (count errors) 0)
     [:div
-     [:h3 [:span {:class "label label-danger"} "Errors while saving new item."]  ]
+     [:h3 [:span {:class "label label-danger"} "Errors while saving new item."]]
      [:ul {:class "list-group"}
       (for [error errors]
-       [:li {:class "list-group-item list-group-item-danger"} error] )
-      ]]))
+       [:li {:class "list-group-item list-group-item-danger"} error])]]))
 
 (defn create-good-form
   []
@@ -70,7 +69,6 @@
        barcode (:barcode new-good)
        errors (state/get-errors)]
     [:div
-
      [:form {:class "form-horizontal"}
       [:div {:class "form-group"}
        [:canvas {:id "picture-region" :width 640 :height 480 :hidden true}]

@@ -52,6 +52,10 @@
   []
   (get-in @app-state [:new-good :barcode]))
 
+(defn reset-new-shop!
+  []
+  (swap! app-state assoc-in [:new-shop] {}))
+
 (defn set-barcode!
   "Stores a barcode that has been read from an image."
   [barcode]

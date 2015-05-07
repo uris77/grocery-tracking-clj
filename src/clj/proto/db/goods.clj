@@ -14,10 +14,16 @@
 ;;; Persistence layer for the goods.
 (def goods-coll "goods")
 
+(defn- persist-good
+  [good]
+  (if (not (number? (:barcode good)))
+    (coll/insert-and-return db goods-coll (assoc good {:barcode nil}))
+    (coll/insert-and-return db goods-coll good)))
+
 (defn create! [good]
   (let [errors (validate-item good)]
     (if (empty? errors)
-      (coll/insert-and-return db goods-coll good)
+      (persist-good good)
       errors)))
 
 (defn all 

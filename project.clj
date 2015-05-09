@@ -78,7 +78,8 @@
                    :figwheel {:http-server-root "public"
                               :server-port 3449
                               :css-dirs ["resources/public/css"]
-                              :ring-handler proto.handler/app}
+                              :ring-handler proto.handler/app
+                              :open-file-command "myfile_opener"}
 
                    :env {:dev? true}
 

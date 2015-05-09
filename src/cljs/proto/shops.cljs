@@ -27,6 +27,13 @@
     (let [resp (<! (http/get (str "/api/shops/" page-num) {"accept" "application/json"}))]
       (swap! state/app-state assoc-in [:shops] (:body resp)))))
 
+(defn read-geolocation
+  [position]
+  (let [coords (.-coords position)
+        lat (.-latitude coords)
+        lon (.-longitude coords)]
+      (state/set-new-shop-value! :latitude lat)
+      (state/set-new-shop-value! :longitude lon)))
 
 (defn- input-text
   "A text input"
@@ -63,7 +70,10 @@
 (defn create-shop-form
   []
   (let [new-shop (state/get-new-shop)
-        errors (state/get-errors)]
+        errors (state/get-errors)
+        navigator (aget js/window "navigator")
+        geolocation (.-geolocation navigator)]
+    (.getCurrentPosition geolocation read-geolocation)
     [:div
      [:form {:class "form-horizontal"}
       (show-errors errors)
@@ -95,6 +105,7 @@
    [:td (:name shop)]
    [:td (:latitude shop)]
    [:td (:longitude shop)]])
+
 
 (defn shops-list
   []

@@ -1,5 +1,6 @@
 (ns proto.db.shops-test
   (:require
+   [environ.core :refer [env]]
    [clojure.test :refer :all]
    [monger.collection :as mc]
    [monger.command     :as cmd]
@@ -30,19 +31,20 @@
     (authenticate-db!)
     (mc/drop db shops/shops-coll)
     (tests)
-    (close!)))
+    ;;(close!)
+    ))
 
 (use-fixtures :each
   (fn [tests]
-    (enable-search)
-    (add-full-text!)
+    ;;(enable-search)
+    ;;(add-full-text!)
     (tests)
     (mc/drop db shops/shops-coll)))
 
 (deftest create-shop-test
   (let [shop-params {:name "A Shop" :latitude 90 :longitude 90} 
         shop (shops/create! shop-params)]
-    (is (not= nil (:_id shop)))))
+    (is (some? (:_id shop)))))
 
 (deftest can-not-create-shop-without-a-name-test
   (let [shop-params {:latitude 90 :longitude 90}
@@ -68,7 +70,7 @@
 (deftest find-shop-by-name-test
   (create-multiple-shops!)
   (let [found-shop (shops/find-by-name "Shop 1")]
-    (is (not= nil (:_id found-shop)))))
+    (is (some? (:_id found-shop)))))
 
 
 ;;This will only be available in mongo 3, but monger does not
@@ -78,4 +80,8 @@
   (let [some-shops (shops/search-by-name "Shop")]
     (is (= 1 some-shops))
     (is (= 2 (count some-shops)))))
+
+(deftest testing-env
+  (testing "Should read test specific vars"
+    (is (= "can_i_get_test" (env :db-name)))))
 

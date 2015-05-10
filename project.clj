@@ -24,6 +24,7 @@
                  [cheshire "5.3.1"]
                  [prismatic/schema "0.4.2"]
                  [com.novemberain/monger "2.1.0"]
+                 [clj-time "0.9.0"]
                  [cljs-http "0.1.27"]
                  [secretary "1.2.3"]]
 

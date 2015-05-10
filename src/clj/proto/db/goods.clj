@@ -1,8 +1,7 @@
 (ns proto.db.goods
   (:import org.bson.types.ObjectId
            com.mongodb.ReadPreference)
-  (:require [environ.core :refer [env]]
-            [monger.core :as mg]
+  (:require [monger.core :as mg]
             [monger.collection :as coll]
             [monger.query :as query :refer [with-collection read-preference paginate fields limit skip snapshot]]
             [schema.core :as schema]
@@ -34,4 +33,15 @@
     (query/sort (sorted-map :name 1))
     (skip (* page 10))
     (limit 10)))
+
+(defn find-by-name
+  "Finds a good item by its name."
+  [name]
+  (coll/find-one-as-map db goods-coll {:name name}))
+
+(defn find-by-barcode
+  "Finds a good item with the given barcode."
+  [barcode]
+  (coll/find-one-as-map db goods-coll {:barcode barcode}))
+
 

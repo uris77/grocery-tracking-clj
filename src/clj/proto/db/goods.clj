@@ -42,6 +42,8 @@
 (defn find-by-barcode
   "Finds a good item with the given barcode."
   [barcode]
-  (coll/find-one-as-map db goods-coll {:barcode barcode}))
+  (if (number? barcode)
+    (coll/find-one-as-map db goods-coll {:barcode barcode})
+    (coll/find-one-as-map db goods-coll {:barcode (Integer. barcode)})))
 
 

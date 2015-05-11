@@ -19,24 +19,35 @@
   []
   (goods/create! {:barcode 12345 :name "Sample Item" :description "A Sample Item For Tests."}))
 
+(defn- reset-db!
+  []
+  (mc/drop db shops/shops-coll)
+  (mc/drop db goods/goods-coll)
+  (mc/drop db prices/prices-coll))
+
 (use-fixtures :once
   (fn [tests]
     (authenticate-db!)
-    (create-sample-shops!)
-    (create-sample-good!)
     (tests)))
 
 (use-fixtures :each
   (fn [tests]
+    (create-sample-shops!)
+    (create-sample-good!)
     (tests)
-    (mc/drop db shops/shops-coll)
-    (mc/drop db goods/goods-coll)
-    (mc/drop db prices/prices-coll)))
+    (reset-db!)))
 
 (deftest add-price-test
-  (testing "Adding a price."
+  (testing "Adds a price."
     (let [shop (shops/find-by-name "Shop 1")
           good (goods/find-by-barcode "12345")
           item-price (prices/save! good shop 45)]
       (is (some? (:_id item-price))))))
 
+(deftest update-price-test
+  (testing "Updates a price for a good."
+    (let [shop (shops/find-by-name "Shop 1")
+          good (goods/find-by-barcode "12345")]
+      (prices/save! good shop 45)
+      (prices/save! good shop 50)
+      (is (= 50 (:price (prices/find-current-price-at good "Shop 1")))))))

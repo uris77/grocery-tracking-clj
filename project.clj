@@ -82,7 +82,9 @@
                               :ring-handler proto.handler/app
                               :open-file-command "myfile_opener"}
 
-                   :env {:dev? true}
+                   :env {:dev? true
+                         :squiggly {:checkers [:eastwood]
+                                    :eastwood-exclude-linters [:unlimited-use]}}
 
                    :prep-tasks [["cljx" "once"]  "javac" "compile"]
 

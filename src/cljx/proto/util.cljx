@@ -1,19 +1,44 @@
 (ns proto.util
   #+cljs (:require-macros [schema.macros :as macros])
-  (:require [schema.core :as schema]
-            [clojure.string :refer [capitalize blank?]]))
+  (:require [schema.core :as s]
+            [clojure.string :refer [capitalize blank?]])
+  (:import org.bson.types.ObjectId))
 
-(#+clj schema/def #+cljs def GroceryItem
-  {:name  schema/Str
-   :description schema/Str
-   :barcode  #+cljs schema/Int #+clj Long
-   (schema/optional-key :categories)  schema/Str
+(s/defschema LonLat (s/named #+cljs s/Int #+clj Double "LonLat"))
+
+(s/defschema Coordinate 
+  (s/named 
+   [(s/one LonLat "lon") (s/one LonLat "lat")] "Coordinate"))
+
+(s/defschema GeoLocation
+  (s/named
+   {:type s/Str
+    :coordinates Coordinate}
+   "GeoLocation"))
+
+(s/defschema GroceryItem
+  {:name s/Str
+   :description s/Str
+   :barcode #+cljs s/Int #+clj Long
+   (s/optional-key :categories) s/Str})
+
+#_(#+clj s/def #+cljs def GroceryItem
+  {:name  s/Str
+   :description s/Str
+   :barcode  #+cljs s/Int #+clj Long
+   (s/optional-key :categories)  s/Str
    })
 
-(#+clj schema/def #+cljs def Shop
-       {:name schema/Str
-        :latitude #+clj Long #+cljs schema/Int
-        :longitude #+clj Long #+cljs schema/Int})
+(s/defschema Shop
+  {(s/optional-key :_id) #+cljs s/Int #+clj ObjectId
+   :name s/Str
+   :loc GeoLocation})
+
+(s/defschema PrintableShop
+  {(s/optional-key :_id) #+cljs s/Int #+clj ObjectId
+   :name s/Str
+   :longitude LonLat
+   :latitude LonLat})
 
 (defn- item-error-parser 
   "Makes an error message more readable."
@@ -47,14 +72,14 @@
 (defn validate-item 
   "Validates a grocery item."
   [item-map]
-  (let [err (schema/check GroceryItem item-map)]
+  (let [err (s/check GroceryItem item-map)]
     (filter-errors (gather-entity-errors (seq err)))
     (reduce into {} (pp-errors (filter-errors (gather-entity-errors (seq err)))))))
 
 (defn validate-shop
   "Validates a shop"
   [shop-map]
-  (let [err (schema/check Shop shop-map)]
+  (let [err (s/check Shop shop-map)]
     (filter-errors (gather-entity-errors (seq err)))
     (reduce into {} (pp-errors (filter-errors (gather-entity-errors (seq err)))))))
 

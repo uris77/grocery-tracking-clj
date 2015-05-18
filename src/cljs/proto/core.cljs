@@ -7,6 +7,8 @@
             [cljsjs.react :as react]
             [proto.goods :as goods]
             [proto.shops :as shops]
+            [proto.prices :as prices]
+            [proto.shop-prices :as shop-prices]
             [proto.state :as state]
             [proto.util :refer [validate-item]])
   (:import goog.History))
@@ -54,10 +56,16 @@
 (secretary/defroute "/shops" []
   (reset-state!)
   (shops/fetch-shops 0)
-  (session/put! :current-page #'shops/shops-list)
-  
-  (secretary/defroute "/shops/create" []
-    (session/put! :current-page #'shops/create-shop-form)))
+  (session/put! :current-page #'shops/shops-list))
+
+(secretary/defroute "/shops/create" []
+    (session/put! :current-page #'shops/create-shop-form))
+
+(secretary/defroute "/prices" []
+  (session/put! :current-page #'prices/search-form))
+
+(secretary/defroute "/prices/:shop-name" [shop-name]
+  (session/put! :current-page #'shop-prices/shop-goods-search))
 
 ;; -------------------------
 ;; History

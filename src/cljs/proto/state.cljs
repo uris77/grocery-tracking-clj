@@ -7,6 +7,9 @@
                       :goods []
                       :new-shop {}
                       :shops []
+                      :shop-name ""
+                      :shop {}
+                      :good-name ""
                       :errors []}))
 
 (def base-url "#")
@@ -23,6 +26,9 @@
 (defn add-new-good! [good]
   (swap! app-state assoc-in [:new-good] good))
 
+(defn set-goods! [goods]
+  (swap! app-state assoc-in [:goods] goods))
+
 (defn set-new-good-value! [id value]
   (swap! app-state assoc-in [:new-good id] value))
 
@@ -36,7 +42,7 @@
   (get-in @app-state [:new-shop]))
 
 (defn reset-new-shop! []
-  (swap! app-state assoc-in [:new-good] {}))
+  (swap! app-state assoc-in [:new-shop] {}))
 
 (defn app-shop! [shop]
   (swap! app-state conj [:shops] shop))
@@ -75,4 +81,27 @@
   []
   (swap! app-state assoc-in [:errors] []))
 
+(defn set-shop-name-for-search!
+  [name]
+  (swap! app-state assoc-in [:shop-name] name))
+
+(defn get-shop-name-for-search
+  []
+  (get-in @app-state [:shop-name]))
+
+(defn set-shop!
+  [shop]
+  (swap! app-state assoc-in [:shop] shop))
+
+(defn get-shop
+  []
+  (get-in @app-state [:shop]))
+
+(defn get-good-name-for-search
+  []
+  (get-in @app-state [:good-name]))
+
+(defn set-good-name-for-search!
+  [good-name]
+  (swap! app-state assoc-in [:good-name] good-name))
 

@@ -8,6 +8,7 @@
             [prone.middleware :refer [wrap-exceptions]]
             [proto.db.goods :as goods]
             [proto.db.shops :as shops]
+            [proto.db.goods-prices :as goods-prices]
             [cheshire.core :refer :all]
             [environ.core :refer [env]]))
 
@@ -33,11 +34,29 @@
     {:headers {"Content-Type" "application/json"}
      :body created-shop}))
 
+(defn find-shop-by-name
+  [req]
+  (let [name (get-in req [:params :name])
+        shop (shops/find-by-name name)]
+    {:headers {"Content-Type" "application/json"}
+     :body shop}))
+
+(defn find-goods-in-shop
+  [shop-id good-name]
+  (let [shop (shops/get-by-id shop-id)
+        good (goods/find-by-name good-name)]
+    {:headers {"Content-Type" "application/json"}
+     :body (goods-prices/find-current-price-at (:_id good) (:name shop))}))
+
 (defroutes api-routes
   (GET "/api/goods/:page" [page] (list-goods page))
   (POST "/api/goods" req (wrap-json-body create-good {:keywords? true :bigdecimals? true}))
+  (GET "/api/shops/search" req find-shop-by-name)  
   (GET "/api/shops/:page" [page] (list-shops page))
-  (POST "/api/shops" req (wrap-json-body create-shop {:keywords? true :bigdecimals? true})))
+  (POST "/api/shops" req (wrap-json-body create-shop {:keywords? true :bigdecimals? true}))
+  (GET "/api/shops/:shop-id/price/:good-name"
+       [shop-id good-name]
+       (find-goods-in-shop shop-id good-name)))
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/main.html" {:dev (env :dev?)}))

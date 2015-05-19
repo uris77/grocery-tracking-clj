@@ -26,7 +26,7 @@
          (dissoc :loc)
          (assoc :longitude longitude :latitude latitude))))
 
-(defn create! 
+(defn create!
   [shop]
   (let [formatted-shop (format-shop shop)
         errors (validate-shop formatted-shop)]
@@ -46,15 +46,15 @@
           seq
           (map #(pp-shop %))))
 
-(defn get-by-id
-  [id]
+(s/defn get-by-id :- (s/maybe PrintableShop)
+  [id :- String]
   (let [oid (ObjectId. id)]
     (some->> 
           (coll/find-map-by-id db shops-coll oid)
           (pp-shop))))
 
-(defn delete!
-  [id]
+(s/defn delete! :- nil
+  [id :- String]
   (let [oid (ObjectId. id)]
     (coll/remove-by-id db shops-coll oid)))
 

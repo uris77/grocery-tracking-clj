@@ -40,6 +40,11 @@
    :longitude LonLat
    :latitude LonLat})
 
+(s/defschema ShopValidationErrors
+  {(s/optional-key :name) s/Str
+   (s/optional-key :longitude) s/Str
+   (s/optional-key :latitude) s/Str})
+
 (defn- item-error-parser 
   "Makes an error message more readable."
   [error-msg]

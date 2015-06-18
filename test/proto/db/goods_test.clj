@@ -15,9 +15,19 @@
   (mc/drop db goods/goods-coll))
 
 (deftest finds-good-by-barcode-test
-  (testing "Can find a good with string or int barcode."
-    (let [barcode 894334]
+  (testing "Can find a good by its barcode."
+    (let [barcode "00894334"]
       (goods/create! {:barcode barcode :name "A Good With A Barcode" :description "Testing barcode search"})
-      (is (= barcode (:barcode (goods/find-by-barcode barcode))))
-      (is (= barcode (:barcode (goods/find-by-barcode (str barcode))))))))
+      (is (= barcode (:barcode (goods/find-by-barcode barcode)))))))
+
+(deftest barcodes-are-unique
+  (testing "Does not create goods with duplicate barcodes."
+    (let [barcode "1111111"
+          good (goods/create! {:barcode barcode :name "First Good" :description "The First Good"})
+          duplicate-good (goods/create! {:barcode barcode :name "Duplicate Good" :description "Good with duplicate barcode."})
+          all-goods (goods/all 0)
+          goods-with-barcode (filterv (fn [it] (= (:barcode it) barcode)) all-goods)]
+      (is (= {} duplicate-good))
+      (is (= 1 (count goods-with-barcode)))
+      (is (= good (first goods-with-barcode))))))
 

@@ -56,7 +56,7 @@
 
 (defn show-errors
   [errors]
-  (when (> (count errors) 0)
+  (when (seq? errors)
     [:div
      [:h3 [:span {:class "label label-danger"} "Errors while saving new item."]]
      [:ul {:class "list-group"}

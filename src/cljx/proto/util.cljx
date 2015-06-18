@@ -2,7 +2,7 @@
   #+cljs (:require-macros [schema.macros :as macros])
   (:require [schema.core :as s]
             [clojure.string :refer [capitalize blank?]])
-  (:import org.bson.types.ObjectId))
+  #+clj (:import org.bson.types.ObjectId))
 
 (s/defschema LonLat (s/named #+cljs s/Int #+clj Double "LonLat"))
 
@@ -19,7 +19,7 @@
 (s/defschema GroceryItem
   {:name s/Str
    :description s/Str
-   :barcode #+cljs s/Int #+clj Long
+   :barcode s/Str
    (s/optional-key :categories) s/Str})
 
 #_(#+clj s/def #+cljs def GroceryItem
@@ -80,6 +80,22 @@
   (let [err (s/check GroceryItem item-map)]
     (filter-errors (gather-entity-errors (seq err)))
     (reduce into {} (pp-errors (filter-errors (gather-entity-errors (seq err)))))))
+
+(s/defn pp-shop :- PrintableShop
+  "Pretty print a shop by flattening its coordinates."
+  [shop :- Shop]
+  (let [coordinates (get-in shop [:loc :coordinates])
+        longitude (first coordinates)
+        latitude (last coordinates)]
+    (-> shop
+         (dissoc :loc)
+         (assoc :longitude longitude :latitude latitude))))
+
+(defn format-shop
+  [shop]
+  (-> shop
+      (assoc-in [:loc] {:type "Point" :coordinates [(double (:longitude shop)) (double (:latitude shop))]})
+      (dissoc :latitude :longitude)))
 
 (defn validate-shop
   "Validates a shop"

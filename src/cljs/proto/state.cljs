@@ -5,11 +5,13 @@
 ;;; Application State
 (def app-state (atom {:new-good {}
                       :goods []
+                      :good-found {}
                       :new-shop {}
                       :shops []
                       :shop-name ""
                       :shop {}
                       :good-name ""
+                      :barcode ""
                       :errors []}))
 
 (def base-url "#")
@@ -104,4 +106,20 @@
 (defn set-good-name-for-search!
   [good-name]
   (swap! app-state assoc-in [:good-name] good-name))
+
+(defn get-barcode-for-search
+  []
+  (get-in @app-state [:barcode]))
+
+(defn set-barcode-for-search!
+  [barcode]
+  (swap! app-state assoc-in [:barcode] barcode))
+
+(defn set-good-found!
+  [good]
+  (swap! app-state assoc-in [:good-found] good))
+
+(defn get-good-found
+  []
+  (get-in @app-state [:good-found]))
 

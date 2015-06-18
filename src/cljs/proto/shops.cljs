@@ -3,7 +3,7 @@
             [cljs-http.client :as http]
             [proto.state :as state]
             [secretary.core :as secretary :include-macros true]
-            [proto.util :refer [validate-shop]])
+            [proto.util :refer [validate-shop format-shop]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn show-list
@@ -46,14 +46,21 @@
              :value (id (state/get-new-shop))
              :on-change #(state/set-new-shop-value! id (-> % .-target .-value))}]]])
 
+(defn- format-loc
+  [shop]
+  (-> shop
+       (assoc-in [:latitude] (js/parseFloat (:latitude shop)))
+       (assoc-in [:longitude] (js/parseFloat (:longitude shop)))))
+
 (defn- submit-form
   [e]
   (.preventDefault e)
-  (let [errors (validate-shop (state/get-new-shop))]
+  (let [formatted-shop (format-shop (state/get-new-shop))
+        errors (validate-shop formatted-shop)]
     (if (empty? errors)
       (go
-        (let [resp (<! (http/post "/api/shops" {:json-params (state/get-new-shop)}))]
-          (prn "Got new shop " (:body resp))
+        (let [shop (format-loc (state/get-new-shop))
+              resp (<! (http/post "/api/shops" {:json-params shop}))]
           (return-to-list)))
       (state/set-errors! (vec (vals errors))))))
 
@@ -69,11 +76,13 @@
 
 (defn create-shop-form
   []
+  (prn "RENDERING AGAIN....")
   (let [new-shop (state/get-new-shop)
         errors (state/get-errors)
         navigator (aget js/window "navigator")
         geolocation (.-geolocation navigator)]
-    (.getCurrentPosition geolocation read-geolocation)
+    (if (or (nil? (:latitude new-shop)) (nil? (:longitude new-shop)))
+      (.getCurrentPosition geolocation read-geolocation))
     [:div
      [:form {:class "form-horizontal"}
       (show-errors errors)

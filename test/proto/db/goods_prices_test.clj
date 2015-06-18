@@ -36,4 +36,13 @@
       (prices/save! good shop 50)
       (is (= 50 (:price (prices/find-current-price-at (:_id good) "Shop 1")))))))
 
+(deftest search-price-for-item-in-store
+  (testing "Searches for price of item at a store."
+    (let [shop (shops/find-by-name "Shop 1")
+          placebo-shop (shops/find-by-name "Placebo")
+          good (goods/find-by-barcode "12345")]
+      (prices/save! good shop 50)
+      (is (nil? (:price (prices/find-current-price-at (:_id good) "Placebo"))))
+      (is (= 50 (:price (prices/find-current-price-by-barcode-at "12345" "Shop 1")))))))
+
 

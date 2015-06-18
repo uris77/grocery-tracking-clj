@@ -39,6 +39,11 @@
         price-for-good (coll/find-one-as-map db prices-coll query)]
     (first (filterv (fn [it] (= shop-name (get-in it [:shop :name]))) (:shops price-for-good)))))
 
+(defn find-current-price-by-barcode-at
+  [barcode shop-name]
+  (let [good (goods/find-by-barcode barcode)]
+    (find-current-price-at (:_id good) shop-name)))
+
 (defn history-for
   "Retrieves historical prices for a good.
   It will return a map with the following structure:

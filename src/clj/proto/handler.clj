@@ -42,11 +42,17 @@
      :body shop}))
 
 (defn find-goods-in-shop
-  [shop-id good-name]
+  [shop-id barcode]
   (let [shop (shops/get-by-id shop-id)
-        good (goods/find-by-name good-name)]
+        good (goods/find-by-name barcode)]
     {:headers {"Content-Type" "application/json"}
      :body (goods-prices/find-current-price-at (:_id good) (:name shop))}))
+
+(defn find-good-by-barcode
+  [barcode]
+  (let [good (goods/find-by-barcode barcode)]
+    {:headers {"Content-Type" "application/json"}
+     :body good}))
 
 (defroutes api-routes
   (GET "/api/goods/:page" [page] (list-goods page))
@@ -54,9 +60,10 @@
   (GET "/api/shops/search" req find-shop-by-name)  
   (GET "/api/shops/:page" [page] (list-shops page))
   (POST "/api/shops" req (wrap-json-body create-shop {:keywords? true :bigdecimals? true}))
-  (GET "/api/shops/:shop-id/price/:good-name"
+  (GET "/api/shops/:shop-id/price/:barcode"
        [shop-id good-name]
-       (find-goods-in-shop shop-id good-name)))
+       (find-goods-in-shop shop-id good-name))
+  (GET "/api/goods/barcode/:barcode" [barcode] (find-good-by-barcode (str barcode))))
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/main.html" {:dev (env :dev?)}))

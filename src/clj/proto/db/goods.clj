@@ -15,15 +15,7 @@
 
 (defn- persist-good
   [good]
-  (if (not (number? (:barcode good)))
-    (coll/insert-and-return db goods-coll (assoc good {:barcode nil}))
-    (coll/insert-and-return db goods-coll good)))
-
-(defn create! [good]
-  (let [errors (validate-item good)]
-    (if (empty? errors)
-      (persist-good good)
-      errors)))
+  (coll/insert-and-return db goods-coll good))
 
 (defn all 
   [page]
@@ -42,8 +34,13 @@
 (defn find-by-barcode
   "Finds a good item with the given barcode."
   [barcode]
-  (if (number? barcode)
-    (coll/find-one-as-map db goods-coll {:barcode barcode})
-    (coll/find-one-as-map db goods-coll {:barcode (Integer. barcode)})))
+  (coll/find-one-as-map db goods-coll {:barcode (str barcode)}))
 
+(defn create! [good]
+  (let [errors (validate-item good)]
+    (if (empty? errors)
+      (if (empty? (find-by-barcode (:barcode good)))
+        (persist-good good)
+        {})
+      errors)))
 

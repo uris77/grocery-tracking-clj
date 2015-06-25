@@ -74,18 +74,19 @@
           (catch js/Error err
             (state/clear-barcode!)) )))))
 
-(defn init []
+(defn init 
+  [cb]
   (.Init js/JOB)
-  (.SetImageCallback js/JOB image-callback)
+  (.SetImageCallback js/JOB cb)
   (set! (.-PostOrientation js/JOB) true)
   (set! (.-OrientationCallback js/JOB) orientation-callback)
   (.SwitchLocalizationFeedback js/JOB true)
   (.SetLocalizationCallback js/JOB localization-callback))
 
-(defn picture-cb [event]
+(defn picture-cb [event cb]
   (write-barcode! "Decoding....")  
-  (init)
+  (init cb)
   (let [files (array-seq (.-files (.-target event)))]
-    (when (and files (> (count (seq files)) 0))
+    (when (and files (seq files))
       (read-image-from-file (first files) event))))
 

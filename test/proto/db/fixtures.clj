@@ -10,8 +10,8 @@
   []
   (shops/create! {:name "Shop 2" :latitude 90 :longitude 90})
   (shops/create! {:name "Shop 1" :latitude 17.2556458 :longitude -88.76978179999999})
-  (shops/create! {:name "Placebo" :latitude 90 :longitude 90})
-  (shops/create! {:name "The Clash" :latitude 90 :longitude 90})
+  (shops/create! {:name "Fancisco" :latitude 17.2550601 :longitude -88.7642205})
+  (shops/create! {:name "The Mall" :latitude 17.2488151 :longitude -88.7724495})
   (shops/create! {:name "Soundgarden" :latitude 90 :longitude 90}))
 
 (defn create-sample-good!

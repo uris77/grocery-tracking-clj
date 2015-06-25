@@ -1,10 +1,13 @@
 (ns proto.goods
   (:require [reagent.core :as reagent]
+            [goog.dom :as dom]
             [cljs-http.client :as http]
+            [clojure.browser.event :as eventclj]
             [proto.state :as state]
             [proto.barcode-picture :as picture]
             [secretary.core :as secretary :include-macros true]
             [proto.util :refer [validate-item]])
+  (:import goog.events.EventType)
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
 (defn show-list
@@ -63,6 +66,16 @@
       (for [error errors]
        [:li {:class "list-group-item list-group-item-danger"} error])]]))
 
+(defn image-callback [result]
+  (letfn [(write-barcode! [barcode] (state/set-barcode! barcode))]
+    (if (seq result)
+      (write-barcode! (.-Value (nth result 0)))
+      (write-barcode! "Error trying to read barcode!"))))
+
+(defn scan-barcode
+  [dom-event]
+  (picture/picture-cb  dom-event image-callback))
+
 (defn create-good-form
   []
  (let [new-good (state/get-new-good)
@@ -76,7 +89,7 @@
        [:input {:id "take-picture" 
                 :type "file" 
                 :accept "image/*;capture-camera"
-                :on-change picture/picture-cb}]]
+                :on-change scan-barcode}]]
       [:div {:class "form-group" :style {:padding-left "15em" :width "50%"}}
        (show-errors errors)]
       [:div {:class "form-group"}

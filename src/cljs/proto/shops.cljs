@@ -76,7 +76,6 @@
 
 (defn create-shop-form
   []
-  (prn "RENDERING AGAIN....")
   (let [new-shop (state/get-new-shop)
         errors (state/get-errors)
         navigator (aget js/window "navigator")

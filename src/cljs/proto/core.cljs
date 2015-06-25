@@ -9,6 +9,7 @@
             [proto.shops :as shops]
             [proto.prices :as prices]
             [proto.shop-prices :as shop-prices]
+            [proto.goods-search :as goods-search]
             [proto.state :as state]
             [proto.util :refer [validate-item]])
   (:import goog.History))
@@ -44,9 +45,11 @@
   (session/put! :current-page #'about-page))
 
 (secretary/defroute "/" []
-  (goods/fetch-goods 0)
+  ;;;(goods/fetch-goods 0)
   (reset-state!)
-  (session/put! :current-page #'goods/goods-list))
+  ;;;(session/put! :current-page #'goods/goods-list)
+  (session/put! :current-page #'goods-search/search-view)
+  )
 
 (secretary/defroute "/goods" []
   (reset-state!)

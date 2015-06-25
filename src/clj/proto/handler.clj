@@ -9,6 +9,7 @@
             [proto.db.goods :as goods]
             [proto.db.shops :as shops]
             [proto.db.goods-prices :as goods-prices]
+            [proto.db.goods-search :as goods-search]
             [cheshire.core :refer :all]
             [environ.core :refer [env]]))
 
@@ -54,6 +55,14 @@
     {:headers {"Content-Type" "application/json"}
      :body good}))
 
+(defn find-prices-for-good-near-location
+  [req]
+  (let [good (goods/find-by-barcode (get-in req [:params :barcode]))
+        lon (Double/parseDouble (get-in req [:params :lon]))
+        lat (Double/parseDouble (get-in req [:params :lat]))]
+    {:headers {"Content-Type" "application/json"}
+     :body (goods-search/find-prices-for-good-near-location good {:lon lon :lat lat})}))
+
 (defroutes api-routes
   (GET "/api/goods/:page" [page] (list-goods page))
   (POST "/api/goods" req (wrap-json-body create-good {:keywords? true :bigdecimals? true}))
@@ -63,7 +72,8 @@
   (GET "/api/shops/:shop-id/price/:barcode"
        [shop-id good-name]
        (find-goods-in-shop shop-id good-name))
-  (GET "/api/goods/barcode/:barcode" [barcode] (find-good-by-barcode (str barcode))))
+  (GET "/api/goods/barcode/:barcode" [barcode] (find-good-by-barcode (str barcode)))
+  (GET "/api/goods/prices/nearby" req find-prices-for-good-near-location))
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/main.html" {:dev (env :dev?)}))

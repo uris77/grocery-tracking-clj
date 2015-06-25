@@ -2,17 +2,21 @@
   (:require
    [clojure.test :refer :all]
    [proto.db.goods :as goods]
+   [proto.db.shops :as shops]
+   [proto.db.goods-prices :as goods-prices]
    [proto.db.core :refer [db authenticate-db!]]
-   [monger.collection :as mc]))
+   [monger.collection :as mc]
+   [proto.db.fixtures :refer :all]))
 
 (use-fixtures :once
   (fn [tests]
     (authenticate-db!)
     (tests)))
 
-(defn- reset-db!
-  []
-  (mc/drop db goods/goods-coll))
+(use-fixtures :each
+  (fn [tests]
+    (tests)
+    (reset-db!)))
 
 (deftest finds-good-by-barcode-test
   (testing "Can find a good by its barcode."

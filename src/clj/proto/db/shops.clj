@@ -52,7 +52,7 @@
 (defn find-within
   "Find all the shops within a specific radius (in miles) from the coordinates."
   [coords, miles]
-  (let [query {:loc {"$centerSphere" [coords, (/ miles earth-radius)]}}]
+  (let [query {:loc {"$geoWithin" {"$centerSphere" [coords, (/ miles earth-radius)]}}}]
     (coll/find-maps db shops-coll query)))
 
 (defn seach-by-name

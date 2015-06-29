@@ -12,6 +12,7 @@
                       :shop {}
                       :good-name ""
                       :barcode ""
+                      :current-location {}
                       :errors []}))
 
 (def base-url "#")
@@ -122,4 +123,12 @@
 (defn get-good-found
   []
   (get-in @app-state [:good-found]))
+
+(defn get-current-location
+  []
+  (get-in @app-state [:current-location]))
+
+(defn set-current-location!
+  [coords]
+  (swap! app-state assoc-in [:current-location] coords))
 

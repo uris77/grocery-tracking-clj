@@ -14,6 +14,16 @@
             [proto.util :refer [validate-item]])
   (:import goog.History))
 
+(defn read-geolocation
+  [position]
+  (let [coords (.-coords position)
+        lat (.-latitude coords)
+        lon (.-longitude coords)]
+    (state/set-current-location! {:lon lon :lat lat})))
+
+(.getCurrentPosition (.-geolocation (aget js/window "navigator")) read-geolocation)
+
+
 ;; -------------------------
 ;; Views
 
@@ -89,3 +99,4 @@
 (defn init! []
   (hook-browser-navigation!)
   (mount-root))
+

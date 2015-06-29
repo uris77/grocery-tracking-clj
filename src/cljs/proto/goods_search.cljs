@@ -1,65 +1,72 @@
 (ns proto.goods-search
   (:require [reagent.core :as reagent :refer [atom]]
             [cljs-http.client :as http]
-            [proto.state :as state]
-            [proto.barcode-picture :as barcode-reader])
+            [cljs.core.async :as async
+             :refer [>! <! put! chan]]
+            [proto.barcode-picture :as barcode-reader]
+            [proto.state :as state])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 
-(def page-status (atom {:current-location {:lon 0 :lat 0}
-                        :good {}
-                        :shops []}))
+
+(defn by-id
+  [id]
+  (.getElementById js/document id))
 
 (defn good-details-panel
-  []
-  (let [good (get-in @page-status [:good])]
+  [good barcode]
+  (if (empty? good)
+    [:div
+     [:h1 "No Item found with this barcode. (" barcode ")"]]
     [:div
      [:h1 (:name good)]
-     [:h2 (:description good)]]))
+     [:h2 (:description good)]
+     [:h3 "Barcode: " barcode]]))
+
+(defn show-good-details
+  [goods-chan barcode]
+  (go
+    (when-let [good (<! goods-chan)]
+      (reagent/render [good-details-panel good barcode] (by-id "good-details")))))
 
 (defn shops-list
-  []
-  (let [shops (get-in @page-status [:shops])]
+  [shops]
+  (when (vector? shops)
     [:ul {:class "list-group"}
      (for [shop shops]
        [:li {:class "list-group-item"} (:name shop)])]))
 
+(defn show-shops
+  [barcode coords]
+  (go 
+    (let [shops-chan (chan 1)
+          prices-url (str "/api/goods/prices/nearby?barcode=" barcode "&lon=" (:lon coords) "&lat=" (:lat coords))
+          shops-resp (<! (http/get prices-url {"accept" "application/json"}))
+          shops (:body shops-resp)]
+      (reagent/render [shops-list shops] (by-id "nearby-shops")))))
+
 (defn get-prices
   "Fetches prices in the nearby shops."
-  [barcode coords]
+  [barcodec coords]
   (go
-    (let [resp (<! (http/get 
-                    (str "/api/goods/prices/nearby?barcode=" barcode "&lon=" (:lon coords) "&lat=" (:lat coords) )
-                    {"accept" "application/json"} ))
-          good-resp (<! (http/get
-                         (str "/api/goods/barcode/" barcode)
-                         {"accept" "application/json"}))]
-      (when-let [shops (:body resp)]
-        (swap! page-status assoc-in [:shops] shops)
-        (reagent/render [shops-list] (.getElementById js/document "nearby-shops")))
-      (when-let [good (:body good-resp)]
-        (swap! page-status assoc-in [:good] (:body good-resp))
-        (reagent/render [good-details-panel] (.getElementById js/document "good-details"))))))
-
-(defn read-geolocation
-  [position]
-  (let [coords (.-coords position)
-        lat (.-latitude coords)
-        lon (.-longitude coords)]
-    (swap! page-status assoc-in [:current-location :lon] lon)
-    (swap! page-status assoc-in [:current-location :lat] lat)))
-
-(.getCurrentPosition (.-geolocation (aget js/window "navigator")) read-geolocation)
-
-(defn submit-search
-  [e]
-  (.preventDefault e)
-  (let [barcode (state/get-barcode-for-search)
-        coords (get-in @page-status [:current-location])]
-    (get-prices barcode coords)))
+    (let [barcode (<! barcodec)
+          good-url (str "/api/goods/barcode/" barcode)
+          good-resp (<! (http/get good-url {"accept" "application/json"}))
+          good (:body good-resp)
+          goods-chan (chan 1)] 
+      (show-good-details goods-chan barcode)
+      (if (map? good)
+        (do
+          (put! goods-chan good)
+          (show-shops barcode coords))
+        (do 
+          (put! goods-chan {})
+          (reagent/render [:div] (by-id "nearby-shops")))))))
 
 (defn write-barcode!
   [barcode]
-  (state/set-barcode-for-search! barcode))
+  (let [barcode-chan (chan 1)]
+    (put! barcode-chan barcode)
+    (get-prices barcode-chan (state/get-current-location))))
 
 (defn barcode-writer
   "Writes the scanned barcode into an atom."
@@ -75,32 +82,18 @@
 (defn search-panel
   "View for searching for  goods."
   []
-  (let [barcode (state/get-barcode-for-search)]
-    [:div
-     [:canvas {:id "picture-region" :width 640 :height 480 :hidden true}]
-     [:img {:id "img" :hidden true}]
-     [:form {:class "form-horizontal"
-             :on-submit submit-search}
-      [:div {:class "form-group"}
-       [:label {:class "col-xs-4 control-label"} "Read barcode from picture"]
-       [:div {:class "col-xs-4"}
-        [:input {:id "take-picture"
-                 :class "form-control btn btn-lg"
-                 :type "file"
-                 :accept "image/*;capture-camera"
-                 :on-change scan-barcode}]]]
-      [:div {:class "form-group"}
-       [:label {:class "col-xs-4 control-label"} "or type Barcode"]
-       [:div {:class "col-xs-4"}
-        [:input {:class "form-control"
-                 :value barcode
-                 :on-change #(state/set-barcode-for-search! (-> % .-target .-value))}]]]
-      [:div {:class "form-group"}
-       [:div {:class "col-xs-offset-4 col-xs-8"}
-        [:input {:class "btn btn-lg btn-primary"
-                 :value "Search"
-                 :type "button"
-                 :on-click submit-search}]]]]]))
+  [:div
+   [:canvas {:id "picture-region" :width 640 :height 480 :hidden true}]
+   [:img {:id "img" :hidden true}]
+   [:form {:class "form-horizontal"}
+    [:div {:class "form-group"}
+     [:label {:class "col-xs-4 control-label"} "Read barcode from picture"]
+     [:div {:class "col-xs-4"}
+      [:input {:id "take-picture"
+               :class "form-control btn btn-lg"
+               :type "file"
+               :accept "image/*;capture-camera"
+               :on-change scan-barcode}]]]]])
 
 (defn search-view
   []

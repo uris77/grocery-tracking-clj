@@ -71,9 +71,9 @@
 (defn barcode-writer
   "Writes the scanned barcode into an atom."
   [result]
-  (if (seq result)
-    (write-barcode! (.-Value (nth result 0)))
-    (write-barcode! "Error trying to read barcode!")))
+  (if (empty? result)
+    (write-barcode! "Error trying to read barcode!")
+    (write-barcode! (.-Value (nth result 0)))))
 
 (defn scan-barcode
   [dom-event]

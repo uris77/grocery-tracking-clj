@@ -59,7 +59,6 @@
   [good shop price]
   (go
     (let [saved-price (<! (http/post "/api/shops/price" {:json-params {:shop shop :good good :price price}}))]
-      (.log js/console "Saved price")
       (dispatch [:saved-price (:body saved-price)]))))
 
 

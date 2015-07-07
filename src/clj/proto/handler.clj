@@ -63,12 +63,24 @@
     {:headers {"Content-Type" "application/json"}
      :body (goods-search/find-prices-for-good-near-location good {:lon lon :lat lat})}))
 
+(defn save-price!
+  [req]
+  (let [body (:body req)
+        good-name (:name (:good body))
+        price (:price body)
+        shop-id (:_id (:shop body))
+        good (goods/find-by-name good-name)
+        shop (shops/get-by-id shop-id)]
+    {:headers {"Content-Type" "application/json"} 
+     :body (goods-prices/save! good shop price)}))
+
 (defroutes api-routes
   (GET "/api/goods/:page" [page] (list-goods page))
   (POST "/api/goods" req (wrap-json-body create-good {:keywords? true :bigdecimals? true}))
   (GET "/api/shops/search" req find-shop-by-name)  
   (GET "/api/shops/:page" [page] (list-shops page))
   (POST "/api/shops" req (wrap-json-body create-shop {:keywords? true :bigdecimals? true}))
+  (POST "/api/shops/price" req (wrap-json-body save-price! {:keywords? true :bigdecimals? true}))  
   (GET "/api/shops/:shop-id/price/:barcode"
        [shop-id good-name]
        (find-goods-in-shop shop-id good-name))
@@ -77,6 +89,7 @@
 
 (defroutes app-routes
   (GET "/" [] (render-file "templates/main.html" {:dev (env :dev?)}))
+  (GET "/reframe" [] (render-file "templates/reframe.html" {:dev (env :dev?)}))
   (resources "/")
   (not-found "Not Found"))
 

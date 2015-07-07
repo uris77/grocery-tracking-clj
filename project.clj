@@ -6,13 +6,14 @@
 
   :source-paths ["src/clj" "src/cljs" "target/generated/clj" "target/generated/cljx"]
 
-  :dependencies [[org.clojure/clojure "1.7.0-RC2"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [ring-server "0.4.0"]
                  [ring-middleware-format "0.5.0" :exclusions [org.clojure/clojure cheshire ring org.clojure/tools.reader]]
                  [cljsjs/react "0.13.1-0"]
                  [reagent "0.5.0"]
                  [reagent-forms "0.4.9"]
                  [reagent-utils "0.1.4"]
+                 [re-frame "0.4.1"]
                  [org.clojure/clojurescript "0.0-3308" :scope "provided"]
                  [ring "1.3.2"]
                  [ring/ring-defaults "0.1.4"]
@@ -69,7 +70,7 @@
                                   [com.keminglabs/cljx "0.6.0"]]
 
                    :source-paths ["env/dev/clj"]
-                   :plugins [[lein-figwheel "0.3.3"]
+                   :plugins [[lein-figwheel "0.3.7"]
                              [lein-cljsbuild "1.0.5"]
                              [com.keminglabs/cljx "0.6.0" :exclusions [org.clojure/clojure]]]
 

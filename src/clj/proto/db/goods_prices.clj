@@ -35,9 +35,8 @@
   "Returns the current price for the specified good at a shop."
   [good-id shop-name]
   (let [shop (shops/find-by-name shop-name)
-        query {"good._id" good-id}
-        price-for-good (coll/find-one-as-map db prices-coll query)]
-    (first (filterv (fn [it] (= shop-name (get-in it [:shop :name]))) (:shops price-for-good)))))
+        query {"good._id" good-id "shop._id" (:_id shop)}]
+    (coll/find-one-as-map db prices-coll query)))
 
 (defn find-current-price-by-barcode-at
   [barcode shop-name]
@@ -47,14 +46,13 @@
 (defn history-for
   "Retrieves historical prices for a good.
   It will return a map with the following structure:
-  {:_id ObjectId :good GOOD :history [{:shop SHOP :prices [:date DATE :price PRICE}]"
+  {:_id ObjectId :good GOOD :shop SHOP :prices [{:price PRICE :date DATE}]"
   [good]
   (coll/find-one-as-map db history-coll {"good._id" (:_id good)}))
 
 (defn history-for-good-at
   [good shop]
-  (let [history (history-for good)]
-    (first (filterv (fn [it] (= (:_id shop) (get-in it [:shop :_id]))) (:history history)))))
+  (coll/find-one-as-map db history-coll {"good._id" (:_id good) "shop._id" (:_id shop)}))
 
 (defn- format-price
   [price]
@@ -64,27 +62,42 @@
         fprice (dissoc price [:shops])]
     (assoc fprice :shops [{:shop shop :price pricev :date date}])))
 
+(defn- format-price-for-shop
+  [good shop]
+  (let [persisted-price (find-current-price-at (:_id good) (:name shop))
+        shops (:shops persisted-price)
+        persisted-good (:good persisted-price)
+        persisted-shop (take 1
+                             (filter
+                              (fn [it]
+                                (= (:_id shop) (:_id (:shop it))) )
+                              shops))
+        date (:date persisted-price)
+        price (:price persisted-good)]
+    {:good persisted-good :price price :date date :shop persisted-shop}))
+
 (defn- persist-update!
   [{old-price :old-price new-price :new-price}]
-  (let [query {"good._id" (get-in old-price [:good :_id]) "shops.shop._id" (get-in new-price [:shops :shop :_id])}
-        update-op {"$set" {"shops.$.price" (get-in new-price [:shops :price])}}]
+  (let [query {"good._id" (get-in old-price [:good :_id]) "shop._id" (get-in new-price [:shop :_id])}
+        update-op {"$set" {"price" (:price new-price)}}
+        shop (:shop (take 1 (:shops new-price)))]
     (coll/update db prices-coll query update-op {:multi false})
-    (find-by-good (:good old-price))))
+    (find-current-price-at (:_id (:good new-price)) (get-in new-price [:shop :name]))))
 
 (defn- persist-history!
   [{old-price :old-price new-price :new-price}]
-  (let [query {"good._id" (get-in old-price [:good :_id]) "history.shop.id" (get-in old-price [:shops :shop :_id])}
-        date (get-in new-price [:shops :date])
-        price (:price (first (filterv (fn [it] (= (get-in it [:shop :_id]) (get-in new-price [:shops :shop :_id]))) (:shops old-price))) )
-        update-op  {$push {"history.$.prices" {:date date :price price}}}
-        persisted-history (find-history-by-good (get-in old-price [:good]))]
+  (let [query {"good._id" (get-in old-price [:good :_id]) 
+               "shop._id" (get-in old-price [:shop :_id])}
+        date (:date old-price)
+        price (:price old-price)
+        update-op  {"$push" {"prices" {:price price :date date}}}
+        persisted-history (history-for-good-at (:good new-price) (:shop new-price))]
     (if (some? persisted-history)
       (coll/update db history-coll query update-op {:multi false})
       (coll/insert-and-return db history-coll 
-                              {:good (:good old-price) 
-                               :history 
-                               [{:shop (get-in new-price [:shops :shop])
-                                 :prices [{:date date :price price}]}]})))) 
+                              {:good (:good new-price) 
+                               :shop (:shop new-price)
+                               :prices [{:price price :date date}]})))) 
 
 (defn update!
   [old-price new-price]
@@ -95,7 +108,7 @@
 (defn insert!
   [price]
   (let [fprice (format-price price)]
-    (coll/insert-and-return db prices-coll fprice)))
+    (coll/insert-and-return db prices-coll price)))
 
 (defn save!
   "Saves a price for a good.
@@ -106,11 +119,11 @@
       price: the price we want to assign the good at the specific shop.
 
   Returns the saved price:
-    {:_id ID :good GOOD :shops [{:shop SHOP :price PRICE :date date]"
+    {:_id ID :good GOOD :shop SHOP :price PRICE :date date}"
   [good shop price]
   (let [current-date (time-format/unparse date-formatter (current-date))
-        persisted-price (find-by-good good)
-        price {:good good :shops {:shop shop :price price :date (coerce/to-date current-date)}}]
+        persisted-price (find-current-price-at (:_id good) (:name shop))
+        price {:good good :shop shop :price price :date (coerce/to-date current-date)}]
     (if (some? persisted-price)
       (update! persisted-price price)
       (insert! price) )))

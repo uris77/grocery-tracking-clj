@@ -16,7 +16,7 @@
 
 (defn create-sample-good!
   []
-  (goods/create! {:barcode 12345 :name "Sample Item" :description "A Sample Item For Tests."}))
+  (goods/create! {:barcode "12345" :name "Sample Item" :description "A Sample Item For Tests."}))
 
 (defn reset-db!
   []

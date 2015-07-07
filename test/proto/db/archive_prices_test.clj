@@ -39,6 +39,5 @@
       (prices/save! good shop 50)
       (prices/save! good shop 51)
       (let [history (prices/history-for-good-at good shop)]
-        (is (= 2 (count (:prices history))))
-        ))))
+        (is (= 2 (count (:prices history))))))))
 

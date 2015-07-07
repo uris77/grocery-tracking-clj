@@ -17,5 +17,5 @@
               (let [price (goods-prices/find-current-price-at (:_id good) (:name shop))]
                 (if (:price price) 
                   price
-                  {:shop shop :name (:name shop)})))]
+                  {:shop shop :good good})))]
       (map get-price shops-nearby))))

@@ -5,12 +5,14 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType]
             [cljsjs.react :as react]
+            [re-frame.core :refer [dispatch-sync]]
             [proto.goods :as goods]
             [proto.shops :as shops]
             [proto.prices :as prices]
             [proto.shop-prices :as shop-prices]
             [proto.goods-search :as goods-search]
             [proto.state :as state]
+            [proto.goods-search-reframe :refer [search-view]]
             [proto.util :refer [validate-item]])
   (:import goog.History))
 
@@ -19,9 +21,10 @@
   (let [coords (.-coords position)
         lat (.-latitude coords)
         lon (.-longitude coords)]
-    (state/set-current-location! {:lon lon :lat lat})))
+    (state/set-current-location! {:lon lon :lat lat})
+    (state/get-current-location)))
 
-(.getCurrentPosition (.-geolocation (aget js/window "navigator")) read-geolocation)
+;;(.getCurrentPosition (.-geolocation (aget js/window "navigator")) read-geolocation)
 
 
 ;; -------------------------
@@ -54,7 +57,7 @@
 (secretary/defroute "/about" []
   (session/put! :current-page #'about-page))
 
-(secretary/defroute "/" []
+#_(secretary/defroute "/" []
   ;;;(goods/fetch-goods 0)
   (reset-state!)
   ;;;(session/put! :current-page #'goods/goods-list)
@@ -80,6 +83,17 @@
 (secretary/defroute "/prices/:shop-name" [shop-name]
   (session/put! :current-page #'shop-prices/shop-goods-search))
 
+(secretary/defroute "/" []
+  (letfn [(init-fn [position]
+            (read-geolocation position)
+            (dispatch-sync [:initialise-db]))]
+    (.getCurrentPosition (.-geolocation (aget js/window "navigator")) init-fn)
+    (session/put! :current-page #'search-view))
+  ;;(.log js/console "geolocstat: " (state/get-current-location))
+  ;;(dispatch-sync [:initialise-db])
+  ;;(session/put! :current-page #'search-view)
+  )
+
 ;; -------------------------
 ;; History
 ;; must be called after routes have been defined
@@ -99,4 +113,5 @@
 (defn init! []
   (hook-browser-navigation!)
   (mount-root))
+
 

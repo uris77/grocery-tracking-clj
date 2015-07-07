@@ -33,7 +33,6 @@
       (swap! state/app-state assoc-in [:goods] (:body resp)))))
 
 (defn- submit-form [e]
-  (prn (state/get-new-good))
   (let [errors (validate-item (state/get-new-good))]
     (if (empty? errors)
       (go

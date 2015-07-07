@@ -24,8 +24,8 @@
   [barcode]
   (go
     (let [good-url (str "/api/goods/barcode/" barcode)
-          resp (<! (http/get good-url {"accept" "application/json"}))
-          grocery (:body resp)]
+          resp     (<! (http/get good-url {"accept" "application/json"}))
+          grocery  (:body resp)]
       grocery)))
 
 (defn barcode-writer

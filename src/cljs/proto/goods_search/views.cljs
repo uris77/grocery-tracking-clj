@@ -3,11 +3,11 @@
             [proto.goods-search.handlers :as handlers]
             [proto.goods-search.subscriptions]))
 
-(def search-state {:barcode ""
-                   :loading? false
-                   :shops []
-                   :item {}
-                   :saving-q []
+(def search-state {:barcode          ""
+                   :loading?         false
+                   :shops            []
+                   :item             {}
+                   :saving-q         []
                    :current-location {}})
 
 ;;;;;;; Views ;;;;;;;;
@@ -23,23 +23,23 @@
     [:div {:class "form-group"}
      [:label {:class "col-xs-4 control-label"} "Read barcode from picture"]
      [:div {:class "col-xs-4"}
-      [:input {:id "take-picture"
-               :class "form-control btn btn-lg"
-               :type "file"
-               :accept "image/*;capture-camera"
+      [:input {:id        "take-picture"
+               :class     "form-control btn btn-lg"
+               :type      "file"
+               :accept    "image/*;capture-camera"
                :on-change handlers/scan-barcode}]]]]])
 
 (defn good-details-panel
   [barcode]
   (let [item-details (subscribe [:good-details-query])]
     (cond
-      (= @barcode :na) [:h2 "Could not read the barcode."]
-      (and @item-details (not (empty? @barcode))) [:div 
-                                                   [:h1 (:name @item-details)] 
-                                                   [:h2 (:description @item-details)]
-                                                   [:h3 "Barcode " (:barcode @item-details)]]
+      (= @barcode :na)                                     [:h2 "Could not read the barcode."]
+      (and @item-details (not (empty? @barcode)))          [:div 
+                                                            [:h1 (:name @item-details)] 
+                                                            [:h2 (:description @item-details)]
+                                                            [:h3 "Barcode " (:barcode @item-details)]]
       (and (empty? @item-details) (not (empty? @barcode))) [:div [:h2 "No item was found with this barcode."]]
-      :else [:div])))
+      :else                                                [:div])))
 
 (defn is-saving?
   [shop saving-q]
@@ -49,8 +49,8 @@
 
 (defn shops-list
   [barcode]
-  (let [shops (subscribe [:shops-query])
-        good (subscribe [:good-details-query])
+  (let [shops    (subscribe [:shops-query])
+        good     (subscribe [:good-details-query])
         saving-q (subscribe [:saving-q-query])]
     (when (and (not= @barcode :na) (vector? @shops))
       [:table {:class "table table-striped table-bordered"}
@@ -65,16 +65,16 @@
             [:td
              (cond
                (or (not (:price shop)) 
-                   (empty? (:price shop))) [:button 
-                                            {:class "btn btn-primary btn-lg" 
-                                             :disabled true} "Save"]
-               (is-saving? (:shop shop) @saving-q) [:button 
-                                                    {:class "btn btn-primary btn-lg" 
-                                                     :disabled true} "Saving"]
-               :else  [:button  
-                       {:class "btn btn-primary btn-lg"
-                        :on-click #(dispatch [:start-saving-price @good (:shop shop) (:price shop)])} 
-                       "Save"])]]))]])))
+                   (empty? (:price shop)))         [:button 
+                                                    {:class    "btn btn-primary btn-lg" 
+                                                     :disabled true} "Save"]
+                   (is-saving? (:shop shop) @saving-q) [:button 
+                                                        {:class    "btn btn-primary btn-lg" 
+                                                         :disabled true} "Saving"]
+                   :else                               [:button  
+                                                        {:class    "btn btn-primary btn-lg"
+                                                         :on-click #(dispatch [:start-saving-price @good (:shop shop) (:price shop)])} 
+                                                        "Save"])]]))]])))
 
 (defn search-view
   []

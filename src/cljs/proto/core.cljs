@@ -10,9 +10,8 @@
             [proto.shops :as shops]
             [proto.prices :as prices]
             [proto.shop-prices :as shop-prices]
-            [proto.goods-search :as goods-search]
             [proto.state :as state]
-            [proto.goods-search-reframe :refer [search-view]]
+            [proto.goods-search.views :refer [search-view]]
             [proto.util :refer [validate-item]])
   (:import goog.History))
 
@@ -57,13 +56,6 @@
 (secretary/defroute "/about" []
   (session/put! :current-page #'about-page))
 
-#_(secretary/defroute "/" []
-  ;;;(goods/fetch-goods 0)
-  (reset-state!)
-  ;;;(session/put! :current-page #'goods/goods-list)
-  (session/put! :current-page #'goods-search/search-view)
-  )
-
 (secretary/defroute "/goods" []
   (reset-state!)
   (goods/fetch-goods 0)
@@ -88,11 +80,7 @@
             (read-geolocation position)
             (dispatch-sync [:initialise-db]))]
     (.getCurrentPosition (.-geolocation (aget js/window "navigator")) init-fn)
-    (session/put! :current-page #'search-view))
-  ;;(.log js/console "geolocstat: " (state/get-current-location))
-  ;;(dispatch-sync [:initialise-db])
-  ;;(session/put! :current-page #'search-view)
-  )
+    (session/put! :current-page #'search-view)))
 
 ;; -------------------------
 ;; History

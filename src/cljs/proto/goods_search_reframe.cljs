@@ -192,8 +192,13 @@
                           :on-change #(dispatch [:change-price shop (-> % .-target .-value)])} ]]
             [:td
              (cond
-               (or (not (:price shop)) (empty? (:price shop))) [:button {:class "btn btn-primary btn-lg" :disabled true} "Save"]
-               (is-saving? (:shop shop) @saving-q) [:button {:class "btn btn-primary btn-lg" :disabled true} "Saving"]
+               (or (not (:price shop)) 
+                   (empty? (:price shop))) [:button 
+                                            {:class "btn btn-primary btn-lg" 
+                                             :disabled true} "Save"]
+               (is-saving? (:shop shop) @saving-q) [:button 
+                                                    {:class "btn btn-primary btn-lg" 
+                                                     :disabled true} "Saving"]
                :else  [:button  
                        {:class "btn btn-primary btn-lg"
                         :on-click #(dispatch [:start-saving-price @good (:shop shop) (:price shop)])} 

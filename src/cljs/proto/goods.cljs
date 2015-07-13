@@ -91,7 +91,7 @@
 (defn goods-list []
   [:div 
    [:section {:class "section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp"} 
-    [:div {:class "mdl-card mld-cell mdl-cell--12-col-desktop mdl-cell--6-col-tablet mdl-cell--4-col-phone"} 
+    [:div {:class "mdl-card mdl-cell mdl-cell--12-col-desktop mdl-cell--6-col-tablet mdl-cell--4-col-phone"} 
      [:section {:style {:padding-top "1em"}
             :class "mdl-card__supporting-text"}
       [:h4 "Groceries"]

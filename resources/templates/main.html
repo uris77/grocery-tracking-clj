@@ -3,63 +3,48 @@
     <meta charset="utf-8">
     <meta name=viewport content="width=device-width, initial-scale=1">
      {% if dev %}
-      {% style "css/bootstrap.css" %}
-      {% style "css/simple-sidebar.css" %}
-      {% style "css/site.css" %}
-      {% style "css/search-bar.css" %}
+      {% style "css/material.css" %}
+      {% style "css/basic_style.css" %}
     {% else %}
-      {% style "css/bootstrap.min.css" %}
-      {% style "css/simple-sidebar.css" %}
-      {% style "css/site.min.css" %}
-      {% style "css/search-bar.min.css" %}
+      {% style "css/material.min.css" %}
+      {% style "css/basic_style.min.css" %}
     {% endif %}
+    {% style "//fonts.googleapis.com/icon?family=Material+Icons" %}
+    <script src="/libs/material.js" type="text/javascript"></script>
   </head>
-  <body>
+  <body class="mdl-demo mdl-color--grey-100 mdl-color-text--grey-700 mdl-base">
     
-      <div id="wrapper">
-        
-        <!-- Sidebar -->
-        <div id="sidebar-wrapper">
-          <ul class="sidebar-nav">
-            <li class="sidebar-brand">
-              <h1>Proto</h1>
-            </li>
-            <li>
-             <a href="#/goods"> All Items </a>
-            </li>
-            <li>
-              <a href="#/shops">Shops</a>
-            </li>
-            <li>
-              <a href="#/prices">Prices</a>
-            </li>
-          </ul>
-        </div>
-        <!-- /Sidebar -->
-	
-        <!-- Content -->
-        <div id="page-content-wrapper">
-          <div class="container-fluid">
-            <div class="row">
-              <div id="app" class="col-lg-12">
-                <h1>Main</h1>
-              </div>
-            </div>
+    <div clas="mdl-layout__container">
+      <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
+          <div class="mdl-layout__header-row">
+            <span class="mdl-layout-title" style="margin-left: 1em">Can I Get My Groceries?</span>
           </div>
+        </header>
+        <div class="mdl-layout__drawer">
+          <span class="mdl-layout-title">Menu</span>
+          <nav class="mdl-navigation">
+            <a class="mdl-navigation__link" href="#/goods">All Items</a>
+            <a class="mdl-navigation__link" href="#/shops">Stores</a>
+            <a class="mdl-navigation__link" href="#/prices">Prices</a>
+          </nav>
         </div>
-
-        <!-- /Content -->
+        <main class="mdl-layout__content" id="app">
+        </main>
       </div>
+    </div>
+
+
       <script src="/libs/DecoderWorker.js" type="text/javascript"></script>
       <script src="/libs/JOB.js" type="text/javascript"></script>
       <script src="/js/app.js" type="text/javascript"></script>
 
       <script type="text/javascript">
         function Decode() {
-           console.log("Decoding...");
            if(!streaming) return;
            JOB.DecodeStream(video);
         }
       </script>
   </body>
 </html>
+

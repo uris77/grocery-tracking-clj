@@ -110,25 +110,28 @@
   "A table row for a single shop."
   [shop]
   [:tr
-   [:td (:name shop)]
-   [:td (:latitude shop)]
-   [:td (:longitude shop)]])
+   [:td {:class "mdl-data-table__cell--non-numeric"} (:name shop)]
+   [:td {:class "mdl-data-table__cell--non-numeric"} (:latitude shop)]
+   [:td {:class "mdl-data-table__cell--non-numeric"} (:longitude shop)]])
 
 
 (defn shops-list
   []
-  [:div {:style {:padding-top "1em"}}
-   [:button {:class "btn btn-lg btn-primary"
-             :on-click show-create-form}
-    "New Shop"]
-   [:div {:style {:padding-top "1em"}}
-    [:table {:class "table table-striped table-bordered"}
-     [:thead
-      [:tr
-       [:th "Name"]
-       [:th "Latitude"]
-       [:th "Longitude"]]]
-     [:tbody
-      (for [shop (state/get-shops)]
-        (shops-row shop))]]]])
+  [:div 
+   [:section {:class "section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp"} 
+    [:div {:class "mdl-card mdl-cell mdl-cell--12-col-desktop mdl-cell--6-col-tablet mdl-cell--4-col-phone"}
+     [:section {:class "mdl-card__supporting-text"}
+      [:h4 "Shops"]
+      [:button {:class "mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
+                :on-click show-create-form}
+       "New Shop"]] 
+     [:table {:class "mdl-data-table mdl-js-data-table"}
+      [:thead
+       [:tr
+        [:th {:class "mdl-data-table__cell--non-numeric"} "Name"]
+        [:th {:class "mdl-data-table__cell--non-numeric"} "Latitude"]
+        [:th {:class "mdl-data-table__cell--non-numeric"} "Longitude"]]]
+      [:tbody
+       (for [shop (state/get-shops)]
+         (shops-row shop))]]]]])
 

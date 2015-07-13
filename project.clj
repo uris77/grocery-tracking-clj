@@ -56,15 +56,15 @@
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
-  :profiles {:dev-common {:repl-options {:init-ns proto.repl
-                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
-                                                     cljx.repl-middleware/wrap-cljx]}
+  :profiles {:dev-common {:repl-options {:init-ns          proto.repl
+                                         :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
+                                                            cljx.repl-middleware/wrap-cljx]}
 
                    :dependencies [[ring-mock "0.1.5"]
                                   [ring/ring-devel "1.3.2"]
                                   [leiningen "2.5.1"]
                                   [weasel "0.6.0"]
-                                  [com.cemerick/piggieback "0.2.0"]
+                                  [com.cemerick/piggieback "0.2.1"]
                                   [org.clojure/tools.nrepl "0.2.10"]
                                   [pjstadig/humane-test-output "0.7.0"]
                                   [com.keminglabs/cljx "0.6.0"]]
@@ -79,6 +79,7 @@
 
                    :figwheel {:http-server-root "public"
                               :server-port 3449
+                              :nrepl-port 7888
                               :css-dirs ["resources/public/css"]
                               :ring-handler proto.handler/app
                               :open-file-command "myfile_opener"}
@@ -99,7 +100,7 @@
                    :cljsbuild {:builds {:app {:source-paths ["env/dev/cljs"]
                                               :compiler {:main "proto.dev"
                                                          :source-map true
-                                                         :externs ["libs/JOB.js" "libs/DecoderWorker.js" "libs/exif.js"]}}}}}
+                                                         :externs ["libs/JOB.js" "libs/DecoderWorker.js" "libs/exif.js" "libs/material.js"]}}}}}
              :dev-env-vars {}
              :dev [:dev-common :dev-env-vars]
              :test-env-vars {}

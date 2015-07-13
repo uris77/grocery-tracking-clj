@@ -12,22 +12,15 @@
 
 (s/defschema GeoLocation
   (s/named
-   {:type s/Str
+   {:type        s/Str
     :coordinates Coordinate}
    "GeoLocation"))
 
 (s/defschema GroceryItem
-  {:name s/Str
-   :description s/Str
-   :barcode s/Str
+  {:name                        s/Str
+   :description                 s/Str
+   :barcode                     s/Str
    (s/optional-key :categories) s/Str})
-
-#_(#+clj s/def #+cljs def GroceryItem
-  {:name  s/Str
-   :description s/Str
-   :barcode  #+cljs s/Int #+clj Long
-   (s/optional-key :categories)  s/Str
-   })
 
 (s/defschema Shop
   {(s/optional-key :_id) #+cljs s/Int #+clj ObjectId
@@ -41,17 +34,17 @@
    :latitude LonLat})
 
 (s/defschema ShopValidationErrors
-  {(s/optional-key :name) s/Str
+  {(s/optional-key :name)      s/Str
    (s/optional-key :longitude) s/Str
-   (s/optional-key :latitude) s/Str})
+   (s/optional-key :latitude)  s/Str})
 
 (defn- item-error-parser 
   "Makes an error message more readable."
   [error-msg]
   (cond
-   (= (str error-msg) "missing-required-key") "is missing!"
-   (= (str error-msg) "disallowed-key") "is an invalid field!"
-   :else ""))
+    (= (str error-msg) "missing-required-key") "is missing!"
+    (= (str error-msg) "disallowed-key")       "is an invalid field!"
+    :else                                      ""))
 
 (defn- pp-errors 
   "Prepends the error message with the corresponding field."
@@ -85,8 +78,8 @@
   "Pretty print a shop by flattening its coordinates."
   [shop :- Shop]
   (let [coordinates (get-in shop [:loc :coordinates])
-        longitude (first coordinates)
-        latitude (last coordinates)]
+        longitude   (first coordinates)
+        latitude    (last coordinates)]
     (-> shop
          (dissoc :loc)
          (assoc :longitude longitude :latitude latitude))))

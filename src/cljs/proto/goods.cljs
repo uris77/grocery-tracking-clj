@@ -75,62 +75,37 @@
   [dom-event]
   (picture/picture-cb  dom-event image-callback))
 
-(defn create-good-form
-  []
- (let [new-good (state/get-new-good)
-       barcode (:barcode new-good)
-       errors (state/get-errors)]
-    [:div
-     [:form {:class "form-horizontal"}
-      [:div {:class "form-group"}
-       [:canvas {:id "picture-region" :width 640 :height 480 :hidden true}]
-       [:img {:id "img" :hidden true}]
-       [:input {:id "take-picture" 
-                :type "file" 
-                :accept "image/*;capture-camera"
-                :on-change scan-barcode}]]
-      [:div {:class "form-group" :style {:padding-left "15em" :width "50%"}}
-       (show-errors errors)]
-      [:div {:class "form-group"}
-       [:label {:class "col-xs-2 control-label"} "Barcode"]
-       [:label {:class "control-label"} barcode]]
-      (new-good-text-input :name "Name")
-      (new-good-text-input :description "Description")
-      (new-good-text-input :categories "Categories")
-      [:div {:class "form-group"}
-       [:div {:class "col-xs-offset-2 col-xs-10"}
-        [:button {:class "btn btn-default btn-lg col-xs-2"
-                  :style {:margin-right "0.5em"}
-                  :on-click cancel-form}
-         "Cancel"]
-        [:button {:class "btn btn-primary btn-lg col-xs-2"
-                  :on-click submit-form} "Save"]]]]]) )
+
 
 (defn- good-row [good]
   [:tr
-   [:td (:barcode good)]
-   [:td (:name good)]
-   [:td (:description good)]
-   [:td (:categories good)]])
+   [:td {:class "mdl-data-table__cell--non-numeric"} (:barcode good)]
+   [:td {:class "mdl-data-table__cell--non-numeric"} (:name good)]
+   [:td {:class "mdl-data-table__cell--non-numeric"} (:description good)]
+   [:td {:class "mdl-data-table__cell--non-numeric"} (:categories good)]])
 
 (defn show-create-form
   []
   (set! (.-location js/window) (str state/base-url "/goods/create")))
 
 (defn goods-list []
-  [:div {:style {:padding-top "1em"}}
-   [:button {:class "btn btn-lg btn-primary"
-             :on-click show-create-form} 
-    "New Grocery"]
-   [:div {:style {:padding-top "1em"}}
-    [:table {:class "table table-striped table-bordered"}
-     [:thead
-      [:tr
-       [:th "Barcode"]
-       [:th "Name"]
-       [:th "Description"]
-       [:th "Categoriees"]]] 
-     [:tbody
-      (for [good (state/get-goods)]
-        (good-row good))]]]])
+  [:div 
+   [:section {:class "section--center mdl-grid mdl-grid--no-spacing mdl-shadow--2dp"} 
+    [:div {:class "mdl-card mld-cell mdl-cell--12-col-desktop mdl-cell--6-col-tablet mdl-cell--4-col-phone"} 
+     [:section {:style {:padding-top "1em"}
+            :class "mdl-card__supporting-text"}
+      [:h4 "Groceries"]
+      [:button {:class "mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
+                :on-click show-create-form} 
+      "New Grocery"]
+      [:table {:class "mdl-data-table mdl-js-data-table"}
+       [:thead
+        [:tr
+         [:th {:class "mdl-data-table__cell--non-numeric"} "Barcode"]
+         [:th {:class "mdl-data-table__cell--non-numeric"} "Name"]
+         [:th {:class "mdl-data-table__cell--non-numeric"} "Description"]
+         [:th {:class "mdl-data-table__cell--non-numeric"} "Categories"]]] 
+       [:tbody
+        (for [good (state/get-goods)]
+          (good-row good))]]]]]])
 

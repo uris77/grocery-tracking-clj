@@ -9,6 +9,13 @@
 ;;;;;;;;; Helpers ;;;;;;;;;
 ;;
 
+(def search-state {:barcode          ""
+                   :loading?         false
+                   :shops            []
+                   :item             {}
+                   :saving-q         []
+                   :current-location {}})
+
 (defn shops-url
   [barcode coords]
   (str "/api/goods/prices/nearby?barcode=" barcode "&lon=" (:lon coords) "&lat=" (:lat coords)))
@@ -38,7 +45,10 @@
             (do
               (dispatch [:grocery-item barcode grocery])
               (let [shops (<! (fetch-shops barcode (get-current-location)))]
-                (dispatch [:fetched-shops shops]))))))))
+                (dispatch [:fetched-shops shops])))
+            (do
+              (dispatch [:grocery-item barcode grocery])
+              (dispatch [:fetched-shops []])))))))
 
 (defn scan-barcode
   [dom-event]

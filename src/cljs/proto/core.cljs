@@ -12,6 +12,7 @@
             [proto.shop-prices :as shop-prices]
             [proto.state :as state]
             [proto.goods-search.views :refer [search-view]]
+            [proto.create-goods.views :as create-goods-views]
             [proto.util :refer [validate-item]])
   (:import goog.History))
 
@@ -51,7 +52,8 @@
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/goods/create" []
-  (session/put! :current-page #'goods/create-good-form))
+  (dispatch-sync [:initialise-create-goods-db])
+  (session/put! :current-page #'create-goods-views/create-good-view))
 
 (secretary/defroute "/about" []
   (session/put! :current-page #'about-page))
@@ -96,7 +98,8 @@
 ;; -------------------------
 ;; Initialize app
 (defn mount-root []
-  (reagent/render [current-page] (.getElementById js/document "app")))
+  (reagent/render [current-page] (.getElementById js/document "app"))
+)
 
 (defn init! []
   (hook-browser-navigation!)
